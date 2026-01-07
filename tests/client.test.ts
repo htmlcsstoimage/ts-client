@@ -115,9 +115,9 @@ describe('HtmlCssToImageClient', () => {
     });
 
 
-    test('createTemplatedImageUrl generates valid HMAC token', () => {
+    test('generateTemplatedImageUrl generates valid HMAC token', () => {
         const client = new HtmlCssToImageClient(apiId, apiKey);
-        const url = client.createTemplatedImageUrl('my-template', { name: 'Bob' });
+        const url = client.generateTemplatedImageUrl('my-template', { name: 'Bob' });
         const parsed_url = new URL(url);
         assert.ok(parsed_url.protocol === 'https:');
         assert.ok(parsed_url.hostname === 'hcti.io');

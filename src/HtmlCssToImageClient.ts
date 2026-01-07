@@ -98,7 +98,7 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
     }
 
 
-    createTemplatedImageUrl<T extends Record<string, any>>(templateIdOrRequest: string | CreateTemplatedImageRequest<T>, templateValues?: T, templateVersion?: number): string {
+    generateTemplatedImageUrl<T extends Record<string, any>>(templateIdOrRequest: string | CreateTemplatedImageRequest<T>, templateValues?: T, templateVersion?: number): string {
         let request: CreateTemplatedImageRequest;
         if (typeof templateIdOrRequest === 'string') {
             request = new CreateTemplatedImageRequest({
@@ -133,7 +133,7 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
         return `${this.baseUrl}/v1/image/${request.template_id}/${token}${queryString ? '?' : ''}${queryString}`;
     }
 
-    createAndRenderUrl(request: CreateUrlImageRequest): string {
+    generateCreateAndRenderUrl(request: CreateUrlImageRequest): string {
         const params = new URLSearchParams();
         params.append('url', request.url);
         Object.entries(request)

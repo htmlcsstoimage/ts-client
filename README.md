@@ -5,7 +5,7 @@ A lightweight TypeScript client for the [HTML/CSS to Image API](https://htmlcsst
 ## Installation
 
 ```bash
-npm install @htmlcsstoimage/ts-client
+npm install @htmlcsstoimage/client
 ```
 
 ## Quick Start
@@ -25,6 +25,9 @@ Alternatively, you can use environment variables (`HCTI_API_ID` and `HCTI_API_KE
 ```typescript
 const client = HtmlCssToImageClient.fromEnv();
 ```
+
+> [!CAUTION]
+> **Security Warning:** Your API Key should always be kept secret. Never use this client directly in frontend code (browsers, mobile apps). If you need to generate images or signed URLs for the frontend, always do so from a secure backend server.
 
 ### Create an Image from HTML/CSS
 
@@ -63,6 +66,18 @@ if (result.success) {
 }
 ```
 
+## Creating Image URLs
+
+You can generate signed URLs for images without actually calling the API by calling `generateCreateAndRenderUrl` or `generateTemplatedImageUrl`.
+
+These methods are synchronous because they don't make any network calls and have been designed to be very high-performance.
+
+Read more about signed URLs in the [create-and-render docs](https://docs.htmlcsstoimage.com/getting-started/create-and-render/).
+
+These URLs are tied to the API Key & API ID you provide when creating the client. If you change them or disable the keys, you'll need to generate new URLs.
+
+These methods are handy when you have a lot of content that may never be rendered and want to render on-demand, as to not waste your image credits.
+
 ## Advanced Usage
 
 ### Using Templates
@@ -99,19 +114,27 @@ You can generate PDF documents by providing `pdf_options`.
 import { CreateHtmlCssImageRequest, PDFOptions } from '@htmlcsstoimage/ts-client';
 
 const request = new CreateHtmlCssImageRequest({
-  html: '<h1>This will be a PDF</h1>',
-  pdf_options: new PDFOptions({
-    page_size: 'A4',
-    margins: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' }
-  })
+    html: '<h1>This will be a PDF</h1>',
+    pdf_options: new PDFOptions({
+        // Use numbers for pixels (default)
+        // Or use an object for specific units (in, cm, mm, px)
+        margins: {
+            top: { value: 10, unit: 'mm' },
+            right: { value: 10, unit: 'mm' },
+            bottom: 20, // defaults to 20px
+            left: { value: 1, unit: 'in' }
+        }
+    })
 });
 
 const result = await client.createImage(request);
 ```
 
-### Batch Processing
+### Batch Image Creation
 
 Generate multiple images in a single request for better performance.
+
+The number of images allowed in a batch depends on your plan, most plans allow up to 25 images per request.
 
 ```typescript
 const variations = [
@@ -130,9 +153,11 @@ if (result.success) {
 }
 ```
 
-### Custom Fetch
+## Custom Fetch
 
-By default, the client uses the global `fetch`. If you are in an environment without a global fetch or want to use a custom implementation (like `node-fetch` or `undici`), you can pass it to the constructor.
+By default, the client uses the global `fetch`. 
+
+If you are in an environment without a global fetch or want to use a custom implementation (like `node-fetch` or `undici`), you can pass it to the constructor.
 
 ```typescript
 import fetch from 'node-fetch';
@@ -144,12 +169,16 @@ const client = new HtmlCssToImageClient(apiId, apiKey, fetch);
 
 - **Full TypeScript support**: Strongly typed requests and responses.
 - **HTML/CSS & URL Support**: Generate images from raw content or live websites.
-- **Templates**: Use your HCTI dashboard templates with dynamic data.
+- **Templates**: Use your HCTI templates with dynamic data.
 - **Signed URLs**: Securely generate image URLs with HMAC authentication.
 - **PDF Support**: Comprehensive PDF generation options.
 - **Batching**: Efficiently generate multiple images in one go.
 - **Zero Dependencies**: Lightweight and uses native fetch by default.
 
-## License
+---
 
-MIT
+> [!IMPORTANT]
+> Check out the [HTML/CSS To Image Docs](https://docs.htmlcsstoimage.com) for more details on the API's capabilities.
+
+> [!TIP]
+> Get started for free at [htmlcsstoimage.com](https://htmlcsstoimage.com).
