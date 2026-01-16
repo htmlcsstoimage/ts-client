@@ -8,7 +8,7 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/htmlcsstoimage/ts-client"
+    "url": "git+https://github.com/htmlcsstoimage/ts-client.git"
   },
   "homepage": "https://htmlcsstoimage.com",
   "author": "HTML/CSS to Image API <support@htmlcsstoimage.com>",
