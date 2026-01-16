@@ -108,6 +108,11 @@ export class CreateUrlImageRequest extends BaseCreateImageRequest {
      */
     full_screen?: boolean;
 
+    /**
+     * Attempt to block cookie/consent banners from displaying.
+     */
+    block_consent_banners?: boolean;
+
     constructor(init?: Partial<CreateUrlImageRequest>) {
         super();
         Object.assign(this, init);

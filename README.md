@@ -5,7 +5,7 @@ A lightweight TypeScript client for the [HTML/CSS to Image API](https://htmlcsst
 ## Installation
 
 ```bash
-npm install @htmlcsstoimage/client
+npm install @html-css-to-image/client
 ```
 
 ## Quick Start
@@ -15,7 +15,7 @@ npm install @htmlcsstoimage/client
 You can initialize the client with your API ID and API Key. You can find these in your [HTML/CSS to Image dashboard](https://htmlcsstoimage.com/dashboard).
 
 ```typescript
-import { HtmlCssToImageClient } from '@htmlcsstoimage/ts-client';
+import { HtmlCssToImageClient } from '@html-css-to-image/client';
 
 const client = new HtmlCssToImageClient('your_user_id', 'your_api_key');
 ```
@@ -32,7 +32,7 @@ const client = HtmlCssToImageClient.fromEnv();
 ### Create an Image from HTML/CSS
 
 ```typescript
-import { CreateHtmlCssImageRequest } from '@htmlcsstoimage/ts-client';
+import { CreateHtmlCssImageRequest } from '@html-css-to-image/client';
 
 const request = new CreateHtmlCssImageRequest({
   html: '<h1>Hello World</h1>',
@@ -52,7 +52,7 @@ if (result.success) {
 ### Create an Image from a URL
 
 ```typescript
-import { CreateUrlImageRequest } from '@htmlcsstoimage/ts-client';
+import { CreateUrlImageRequest } from '@html-css-to-image/client';
 
 const request = new CreateUrlImageRequest({
   url: 'https://example.com',
@@ -68,6 +68,8 @@ if (result.success) {
 
 ## Creating Image URLs
 
+For use cases where you want to generate a URL on the server and use it safely on the client (without exposing your API key), you can generate a signed URL.
+
 You can generate signed URLs for images without actually calling the API by calling `generateCreateAndRenderUrl` or `generateTemplatedImageUrl`.
 
 These methods are synchronous because they don't make any network calls and have been designed to be very high-performance.
@@ -78,11 +80,40 @@ These URLs are tied to the API Key & API ID you provide when creating the client
 
 These methods are handy when you have a lot of content that may never be rendered and want to render on-demand, as to not waste your image credits.
 
-## Advanced Usage
+### Signed Template URLs
+
+```typescript
+const signedUrl = client.createTemplatedImageUrl('your_template_id', {
+  title: 'Dynamic Title'
+});
+
+console.log('Signed URL:', signedUrl);
+```
+
+> [!TIP]
+> You can also pass in a `CreateTemplatedImageRequest` object to generate a signed URL for a template.
+
+### Signed Screenshot URLs
+Sometimes you want to maintain an endpoint for your images, and just take a screenshot of it. This is where the `generateCreateAndRenderUrl` method is handy.
+
+```typescript
+import {CreateUrlImageRequest} from '@html-css-to-image/client';
+const this_item = {
+    id: 123,
+    updated_at: new Date(2025, 7, 15)
+};
+const url_request = new CreateUrlImageRequest({ 
+    url: `https://website.com/_social/${this_tem_id}?updated_at=${updated_at.valueOf()}`, 
+    viewport_width: 600, 
+    viewport_height: 200});
+const signedUrl = client.generateCreateAndRenderUr(url_request);
+
+// now it's safe to use signedUrl on the frontend in a meta or img tag, without exposing your API key, and it will be kept updated as the updated_at changes.
+```
 
 ### Using Templates
 
-If you have created a template in your dashboard, you can generate an image by passing your template ID and the data for your variables.
+If you have created a template for your account, you can generate an image by passing your template ID and the data for your variables.
 
 ```typescript
 const result = await client.createImage({
@@ -94,24 +125,12 @@ const result = await client.createImage({
 });
 ```
 
-### Generating Signed Template URLs
-
-For use cases where you want to generate a URL on the server and use it safely on the client (without exposing your API key), you can generate a signed URL.
-
-```typescript
-const signedUrl = client.createTemplatedImageUrl('your_template_id', {
-  title: 'Dynamic Title'
-});
-
-console.log('Signed URL:', signedUrl);
-```
-
 ### PDF Generation
 
 You can generate PDF documents by providing `pdf_options`.
 
 ```typescript
-import { CreateHtmlCssImageRequest, PDFOptions } from '@htmlcsstoimage/ts-client';
+import { CreateHtmlCssImageRequest, PDFOptions } from '@html-css-to-image/client';
 
 const request = new CreateHtmlCssImageRequest({
     html: '<h1>This will be a PDF</h1>',

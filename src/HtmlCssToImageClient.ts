@@ -1,6 +1,6 @@
 import {IHtmlCssToImageClient} from "./IHtmlCssToImageClient.js";
 import {CreateHtmlCssImageRequest, CreateTemplatedImageRequest, CreateUrlImageRequest, PDFOptions, PdfValueInput} from "./types/request.js";
-import {CreateImageBatchResponse, CreateImageBatchSuccessResponse, CreateImageErrorResponse, CreateImageResponse, CreateImageSuccessResponse} from "./types/response.js";
+import {CreateImageBatchResponse, CreateImageBatchSuccessResponse, CreateImageResponse} from "./types/response.js";
 import {InternalCreateHtmlCssImageRequest, InternalCreateHtmlCssImageRequestWithOptionalHtml, InternalCreateUrlImageRequest, InternalCreateUrlImageRequestWithOptionalUrl, InternalPDFOptions} from "./types/internals.js";
 import * as crypto from 'node:crypto';
 
@@ -137,7 +137,7 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
         const params = new URLSearchParams();
         params.append('url', request.url);
         Object.entries(request)
-            .filter(([key, value]) => key !== 'url' && key != 'pdf_options' && key !== '__type')
+            .filter(([key, _]) => key !== 'url' && key != 'pdf_options' && key !== '__type')
             .sort((a, b) => a[0].localeCompare(b[0]))
             .forEach(([key, value]) => {
                 if (value !== undefined && value !== null && value !== false) {

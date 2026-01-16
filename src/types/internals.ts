@@ -61,11 +61,6 @@ export abstract class BaseCreateRequestWithoutVariableOptions {
      */
     timezone?: string;
 
-    /**
-     * Attempt to block cookie/consent banners from displaying.
-     */
-    block_consent_banners?: boolean;
-
     constructor(init?: Partial<BaseCreateRequestWithoutVariableOptions>) {
         Object.assign(this, init);
     }
@@ -116,9 +111,11 @@ export interface InternalCreateHtmlCssImageRequestWithOptionalHtml extends Inter
 export interface InternalCreateUrlImageRequest extends InternalBaseCreateRequest {
     url: string;
     full_screen?: boolean;
+    block_consent_banners?: boolean;
 }
 
 export interface InternalCreateUrlImageRequestWithOptionalUrl extends InternalBaseCreateRequest {
     url?: string;
     full_screen?: boolean;
+    block_consent_banners?: boolean;
 }
