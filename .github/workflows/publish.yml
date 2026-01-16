@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
       - run: npm ci
@@ -25,4 +25,4 @@ jobs:
       - run: npm test
 
       - name: Publish if new version
-        run: npm publish --access public || echo "Version already exists, skipping publish"
+        run: npm publish --access public --provenance || echo "Version already exists, skipping publish"
