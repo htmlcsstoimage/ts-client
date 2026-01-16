@@ -1,0 +1,12 @@
+{
+  "name": "simple-client-usage",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx tsx index.ts"
+  },
+  "dependencies": {
+    "@html-css-to-image/client": "^0.0.3"
+  }
+}
