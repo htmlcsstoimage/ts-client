@@ -25,4 +25,4 @@ jobs:
       - run: npm test
 
       - name: Publish if new version
-        run: npm publish --access public --provenance || echo "Version already exists, skipping publish"
+        run: npm publish --access public || echo "Version already exists, skipping publish"
