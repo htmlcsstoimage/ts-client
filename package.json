@@ -17,7 +17,7 @@
     "dist"
   ],
   "scripts": {
-    "test": "tsx --test tests/**/*.test.ts",
+    "test": "tsx --test tests/*.test.ts",
     "build": "tsc",
     "prepublishOnly": "npm run build"
   },
