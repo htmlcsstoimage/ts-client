@@ -1,6 +1,6 @@
 {
   "name": "@html-css-to-image/client",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "description": "Lightweight TypeScript client for the HTML/CSS to Image API. Generate images from HTML/CSS, URLs, or templates in your TypeScript or JavaScript projects.",
   "main": "dist/index.js",
