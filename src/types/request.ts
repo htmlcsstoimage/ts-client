@@ -2,6 +2,7 @@ import {BaseCreateRequestWithoutVariableOptions, BasePDFOptions} from "./interna
 
 export type ColorSchemeType = 'light' | 'dark';
 export type PdfUnit = 'px' | 'in' | 'cm' | 'mm';
+export type MediaType = 'print' | 'screen';
 
 export interface PdfValueWithUnits {
     value: number;
