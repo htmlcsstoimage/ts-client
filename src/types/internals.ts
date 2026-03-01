@@ -1,4 +1,4 @@
-import {ColorSchemeType} from "./request.js";
+import {ColorSchemeType, MediaType} from "./request.js";
 
 export abstract class BaseCreateRequestWithoutVariableOptions {
     /**
@@ -60,6 +60,26 @@ export abstract class BaseCreateRequestWithoutVariableOptions {
      * Sets the timezone for the browser instance. Use IANA timezone format (e.g. 'America/New_York').
      */
     timezone?: string;
+
+    /**
+     Sets a value indicating whether the viewport should be rendered as if it's being viewed from a mobile device.
+     */
+    viewport_mobile?: boolean;
+
+    /**
+     Sets a value indicating whether touch interactions are enabled within the viewport.
+     */
+    viewport_touch?: boolean;
+
+    /**
+     * sets a value indicating whether the viewport should be in landscape orientation.
+     */
+    viewport_landscape?: boolean;
+
+    /**
+     * Sets the media type to use for rendering, 'print' or 'screen'.
+     */
+    media_type?: MediaType;
 
     constructor(init?: Partial<BaseCreateRequestWithoutVariableOptions>) {
         Object.assign(this, init);
