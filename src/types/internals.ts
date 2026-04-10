@@ -81,6 +81,11 @@ export abstract class BaseCreateRequestWithoutVariableOptions {
      */
     media_type?: MediaType;
 
+    /**
+     * Sets which proxy_id for your organization to use when rendering.
+     */
+    proxy_id?: string;
+
     constructor(init?: Partial<BaseCreateRequestWithoutVariableOptions>) {
         Object.assign(this, init);
     }
