@@ -86,6 +86,16 @@ export abstract class BaseCreateRequestWithoutVariableOptions {
      */
     proxy_id?: string;
 
+    /**
+     * Sets the Maximum width of the rendered image in jumbo mode. Consumes extra renders, jumbo_max_height to be defined as well.
+     */
+    jumbo_max_width?: number;
+
+    /**
+     * Sets the Maximum height of the rendered image in jumbo mode. Consumes extra renders, jumbo_max_width to be defined as well.
+     */
+    jumbo_max_height?: number;
+
     constructor(init?: Partial<BaseCreateRequestWithoutVariableOptions>) {
         Object.assign(this, init);
     }
