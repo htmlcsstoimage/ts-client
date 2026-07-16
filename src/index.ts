@@ -1,16 +1,28 @@
 export {
     BaseCreateImageRequest,
     CreateHtmlCssImageRequest,
+    CreateTemplatedImageRequest,
     CreateUrlImageRequest,
-    PDFOptions,
+    PDFOptions
+} from './types/request.js';
+
+export type {
+    ColorSchemeType,
+    MediaType,
     PdfMargins,
+    PdfValueInput,
     PdfValueWithUnits,
     PdfUnit
 } from './types/request.js';
 
-export {
+export type {
+    CreateImageBatchResponse,
+    CreateImageBatchSuccessResponse,
+    CreateImageErrorResponse,
     CreateImageResponse,
-    CreateImageBatchResponse
+    CreateImageSuccessResponse,
+    ValidationError
 } from './types/response.js';
 export { HtmlCssToImageClient } from './HtmlCssToImageClient.js';
-export { IHtmlCssToImageClient } from './IHtmlCssToImageClient.js';
+export type { FetchFunction } from './HtmlCssToImageClient.js';
+export type { IHtmlCssToImageClient } from './IHtmlCssToImageClient.js';

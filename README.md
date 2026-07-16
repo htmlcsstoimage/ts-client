@@ -56,6 +56,7 @@ import { CreateUrlImageRequest } from '@html-css-to-image/client';
 
 const request = new CreateUrlImageRequest({
   url: 'https://example.com',
+  css: '.cookie-banner { display: none; }',
   full_screen: true
 });
 
@@ -83,7 +84,7 @@ These methods are handy when you have a lot of content that may never be rendere
 ### Signed Template URLs
 
 ```typescript
-const signedUrl = client.createTemplatedImageUrl('your_template_id', {
+const signedUrl = client.generateTemplatedImageUrl('your_template_id', {
   title: 'Dynamic Title'
 });
 
@@ -102,11 +103,11 @@ const this_item = {
     id: 123,
     updated_at: new Date(2025, 7, 15)
 };
-const url_request = new CreateUrlImageRequest({ 
-    url: `https://website.com/_social/${this_tem_id}?updated_at=${updated_at.valueOf()}`, 
-    viewport_width: 600, 
+const url_request = new CreateUrlImageRequest({
+    url: `https://website.com/_social/${this_item.id}?updated_at=${this_item.updated_at.valueOf()}`,
+    viewport_width: 600,
     viewport_height: 200});
-const signedUrl = client.generateCreateAndRenderUr(url_request);
+const signedUrl = client.generateCreateAndRenderUrl(url_request);
 
 // now it's safe to use signedUrl on the frontend in a meta or img tag, without exposing your API key, and it will be kept updated as the updated_at changes.
 ```
@@ -116,13 +117,15 @@ const signedUrl = client.generateCreateAndRenderUr(url_request);
 If you have created a template for your account, you can generate an image by passing your template ID and the data for your variables.
 
 ```typescript
-const result = await client.createImage({
+import { CreateTemplatedImageRequest } from '@html-css-to-image/client';
+
+const result = await client.createImage(new CreateTemplatedImageRequest({
   template_id: 'your_template_id',
   template_values: {
     title: 'Hello from Template',
     subtitle: 'This is a dynamic value'
   }
-});
+}));
 ```
 
 ### PDF Generation

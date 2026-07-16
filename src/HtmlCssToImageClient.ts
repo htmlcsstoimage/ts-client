@@ -1,10 +1,48 @@
-import {IHtmlCssToImageClient} from "./IHtmlCssToImageClient.js";
-import {CreateHtmlCssImageRequest, CreateTemplatedImageRequest, CreateUrlImageRequest, PDFOptions, PdfValueInput} from "./types/request.js";
-import {CreateImageBatchResponse, CreateImageBatchSuccessResponse, CreateImageResponse} from "./types/response.js";
-import {InternalCreateHtmlCssImageRequest, InternalCreateHtmlCssImageRequestWithOptionalHtml, InternalCreateUrlImageRequest, InternalCreateUrlImageRequestWithOptionalUrl, InternalPDFOptions} from "./types/internals.js";
+import type {IHtmlCssToImageClient} from "./IHtmlCssToImageClient.js";
+import {CreateTemplatedImageRequest} from "./types/request.js";
+import type {BaseCreateImageRequest, CreateHtmlCssImageRequest, CreateUrlImageRequest, PDFOptions, PdfValueInput} from "./types/request.js";
+import type {CreateImageBatchResponse, CreateImageBatchSuccessResponse, CreateImageResponse} from "./types/response.js";
 import * as crypto from 'node:crypto';
 
 export type FetchFunction = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+
+interface InternalPDFOptions {
+    print_background?: boolean;
+    scale?: number;
+    margins?: string[];
+    page_height?: string;
+    page_width?: string;
+}
+
+type InternalBaseCreateRequest = Omit<BaseCreateImageRequest, 'pdf_options'> & {
+    pdf_options?: InternalPDFOptions;
+};
+
+type InternalCreateHtmlCssImageRequest = InternalBaseCreateRequest & {
+    html: string;
+    css?: string;
+    google_fonts?: string;
+};
+
+type InternalCreateHtmlCssImageRequestWithOptionalHtml = InternalBaseCreateRequest & {
+    html?: string;
+    css?: string;
+    google_fonts?: string;
+};
+
+type InternalCreateUrlImageRequest = InternalBaseCreateRequest & {
+    url: string;
+    css?: string;
+    full_screen?: boolean;
+    block_consent_banners?: boolean;
+};
+
+type InternalCreateUrlImageRequestWithOptionalUrl = InternalBaseCreateRequest & {
+    url?: string;
+    css?: string;
+    full_screen?: boolean;
+    block_consent_banners?: boolean;
+};
 
 export class HtmlCssToImageClient implements IHtmlCssToImageClient {
 
@@ -65,7 +103,10 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
             case 'url':
                 return this.mapUrlToInternalRequest(request, in_batch);
             case 'templated':
-                return request;
+                {
+                    const {__type, ...templatedRequest} = request;
+                    return templatedRequest;
+                }
             default:
                 throw new Error("Unsupported request type");
         }
@@ -232,6 +273,7 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
             }
             return new_pdf_options;
         }
+        return undefined;
     }
 
 
