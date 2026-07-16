@@ -1,11 +1,17 @@
 {
   "name": "@html-css-to-image/client",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "description": "Lightweight TypeScript client for the HTML/CSS to Image API. Generate images from HTML/CSS, URLs, or templates in your TypeScript or JavaScript projects.",
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/htmlcsstoimage/ts-client.git"
@@ -18,7 +24,8 @@
   ],
   "scripts": {
     "test": "tsx --test tests/*.test.ts",
-    "build": "tsc",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc",
     "prepublishOnly": "npm run build"
   },
   "keywords": [

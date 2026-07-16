@@ -1,8 +1,8 @@
-import { test, describe, before, after } from 'node:test';
+import { test, describe } from 'node:test';
 import assert from 'node:assert';
 import { HtmlCssToImageClient } from '../src/HtmlCssToImageClient.js';
-import {CreateHtmlCssImageRequest, CreateUrlImageRequest, PDFOptions} from '../src/types/request.js';
-import {CreateImageSuccessResponse} from "../src/types/response.js";
+import {CreateHtmlCssImageRequest, CreateTemplatedImageRequest, CreateUrlImageRequest, PDFOptions} from '../src/types/request.js';
+import type {CreateImageSuccessResponse} from "../src/types/response.js";
 
 describe('HtmlCssToImageClient', () => {
 
@@ -16,7 +16,7 @@ describe('HtmlCssToImageClient', () => {
 
             // Verify the mapping logic (internal serialization)
             assert.strictEqual(body.html, '<h1>Test</h1>');
-            assert.deepStrictEqual(body.pdf_options.margins, ['10px', '20px', '10px', '20in']);
+            assert.deepStrictEqual(body.pdf_options.margins, ['10px', '20px', '5mm', '20in']);
             assert.strictEqual(body.google_fonts, 'Roboto|Open+Sans');
 
             return {
@@ -30,7 +30,12 @@ describe('HtmlCssToImageClient', () => {
             html: '<h1>Test</h1>',
             google_fonts: ['Roboto', 'Open Sans','Open Sans'],
             pdf_options: new PDFOptions({
-                margins: { top: 10,  bottom: 10, right: 20, left: {value: 20, unit: 'in'} }
+                margins: {
+                    top: 10,
+                    bottom: {value: 5, unit: 'mm'},
+                    right: 20,
+                    left: {value: 20, unit: 'in'}
+                }
             })
         });
         const client = new HtmlCssToImageClient(apiId, apiKey, mockFetch as any);
@@ -42,6 +47,60 @@ describe('HtmlCssToImageClient', () => {
         } else {
             assert.fail('Should have been a success response');
         }
+    });
+
+    test('createImage strips the internal template discriminator', async () => {
+        const mockFetch = async (_url: string, options: any) => {
+            const body = JSON.parse(options.body);
+            assert.strictEqual(body.__type, undefined);
+            assert.strictEqual(body.template_id, 'template-id');
+            assert.deepStrictEqual(body.template_values, {title: 'Hello'});
+
+            return {
+                ok: true,
+                json: async () => ({id: '123', url: 'https://hcti.io/v1/image/123'})
+            };
+        };
+
+        const client = new HtmlCssToImageClient(apiId, apiKey, mockFetch as any);
+        const result = await client.createImage(new CreateTemplatedImageRequest({
+            template_id: 'template-id',
+            template_values: {title: 'Hello'}
+        }));
+
+        assert.strictEqual(result.success, true);
+    });
+
+    test('createImage sends CSS with URL screenshot requests', async () => {
+        const mockFetch = async (_url: string, options: any) => {
+            const body = JSON.parse(options.body);
+            assert.strictEqual(body.url, 'https://example.com');
+            assert.strictEqual(body.css, 'body { background: black; }');
+
+            return {
+                ok: true,
+                json: async () => ({id: '123', url: 'https://hcti.io/v1/image/123'})
+            };
+        };
+
+        const client = new HtmlCssToImageClient(apiId, apiKey, mockFetch as any);
+        const result = await client.createImage(new CreateUrlImageRequest({
+            url: 'https://example.com',
+            css: 'body { background: black; }'
+        }));
+
+        assert.strictEqual(result.success, true);
+    });
+
+    test('generateCreateAndRenderUrl includes CSS for URL screenshots', () => {
+        const client = new HtmlCssToImageClient(apiId, apiKey);
+        const url = client.generateCreateAndRenderUrl(new CreateUrlImageRequest({
+            url: 'https://example.com',
+            css: 'body { background: black; }'
+        }));
+
+        const parsedUrl = new URL(url);
+        assert.strictEqual(parsedUrl.searchParams.get('css'), 'body { background: black; }');
     });
 
     test('createImageBatch correctly maps and sends batch request', async () => {
@@ -57,8 +116,6 @@ describe('HtmlCssToImageClient', () => {
             assert.strictEqual(body.variations.length, 2);
             assert.strictEqual(body.variations[0].html, '<h1>V1</h1>');
             assert.strictEqual(body.variations[1].html, '<h1>V2</h1>');
-            console.log(options.body);
-
             return {
                 ok: true,
                 json: async () => ({ images: [{ id: '1', url: 'u1' }, { id: '2', url: 'u2' }] })
@@ -92,8 +149,6 @@ describe('HtmlCssToImageClient', () => {
             assert.strictEqual(body.variations[0].html, '<h1>V1</h1>');
             assert.strictEqual(body.variations[1].html,  undefined);
             assert.strictEqual(body.default_options.html, '<h1>BASE</h1>');
-            console.log(options.body);
-
             return {
                 ok: true,
                 json: async () => ({ images: [{ id: '1', url: 'u1' }, { id: '2', url: 'u2' }] })

@@ -1,5 +1,3 @@
-import {BaseCreateRequestWithoutVariableOptions, BasePDFOptions} from "./internals.js";
-
 export type ColorSchemeType = 'light' | 'dark';
 export type PdfUnit = 'px' | 'in' | 'cm' | 'mm';
 export type MediaType = 'print' | 'screen';
@@ -26,7 +24,17 @@ export interface PdfMargins {
     left: PdfValueInput;
 }
 
-export class PDFOptions extends BasePDFOptions {
+export class PDFOptions {
+    /**
+     * Whether background graphics should be printed in the PDF output.
+     */
+    print_background?: boolean;
+
+    /**
+     * The scale factor applied when generating the PDF output.
+     */
+    scale?: number;
+
     /**
      * Gets or sets the margins to be applied to the PDF output.
      * Specifies the top, right, bottom, and left margins.
@@ -44,7 +52,6 @@ export class PDFOptions extends BasePDFOptions {
     page_width?: PdfValueInput;
 
     constructor(init?: Partial<PDFOptions>) {
-        super();
         Object.assign(this, init);
     }
 
@@ -52,14 +59,105 @@ export class PDFOptions extends BasePDFOptions {
 }
 
 
-export abstract class BaseCreateImageRequest extends BaseCreateRequestWithoutVariableOptions {
+export abstract class BaseCreateImageRequest {
+    /**
+     * A CSS selector to target a specific element on the page.
+     * The API will crop the image to the dimensions of this element.
+     */
+    selector?: string;
+
+    /**
+     * Adjusts the pixel ratio for the screenshot.
+     * The default is 2, which is equivalent to a 4K monitor.
+     */
+    device_scale?: number;
+
+    /**
+     * Set the height of Chrome's viewport. This will disable automatic cropping.
+     */
+    viewport_height?: number;
+
+    /**
+     * Set the width of Chrome's viewport. This will disable automatic cropping.
+     */
+    viewport_width?: number;
+
+    /**
+     * Sets a limit on time to wait until the screenshot is taken.
+     */
+    max_wait_ms?: number;
+
+    /**
+     * Adds extra time before taking the screenshot, such as when waiting for JavaScript to execute.
+     */
+    ms_delay?: number;
+
+    /**
+     * Wait until ScreenshotReady() is called from JavaScript before taking the screenshot.
+     */
+    render_when_ready?: boolean;
+
+    /**
+     * Ensure the image is only ever rendered and saved one time.
+     */
+    max_render_once?: boolean;
+
+    /**
+     * Disable Twemoji fallback rendering.
+     */
+    disable_twemoji?: boolean;
+
+    /**
+     * Render as if the user has selected light or dark mode.
+     */
+    color_scheme?: ColorSchemeType;
+
+    /**
+     * Set the browser timezone using an IANA timezone name.
+     */
+    timezone?: string;
+
+    /**
+     * Render as if the viewport is a mobile device.
+     */
+    viewport_mobile?: boolean;
+
+    /**
+     * Enable touch interactions within the viewport.
+     */
+    viewport_touch?: boolean;
+
+    /**
+     * Render the viewport in landscape orientation.
+     */
+    viewport_landscape?: boolean;
+
+    /**
+     * Set the rendering media type.
+     */
+    media_type?: MediaType;
+
+    /**
+     * Select an organization proxy for rendering.
+     */
+    proxy_id?: string;
+
+    /**
+     * Set the maximum width in jumbo mode. jumbo_max_height must also be defined.
+     */
+    jumbo_max_width?: number;
+
+    /**
+     * Set the maximum height in jumbo mode. jumbo_max_width must also be defined.
+     */
+    jumbo_max_height?: number;
+
     /**
      * Options for generating a PDF from the HTML/CSS or Url.
      */
     pdf_options?: PDFOptions;
 
     protected constructor(init?: Partial<BaseCreateImageRequest>) {
-        super();
         Object.assign(this, init);
     }
 }
@@ -100,6 +198,13 @@ export class CreateUrlImageRequest extends BaseCreateImageRequest {
      * This variable is expected to contain a valid URL string.
      */
     url!: string;
+
+    /**
+     * Custom CSS rules to inject into the target webpage before rendering.
+     * Use this to override existing styles or customize specific elements.
+     */
+    css?: string;
+
     /**
      * Indicates whether the screenshot should capture the entire webpage in full height.
      *

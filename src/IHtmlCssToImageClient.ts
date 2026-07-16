@@ -1,5 +1,5 @@
-import {CreateHtmlCssImageRequest, CreateTemplatedImageRequest, CreateUrlImageRequest} from "./types/request.js";
-import {CreateImageBatchResponse, CreateImageErrorResponse, CreateImageResponse, CreateImageSuccessResponse} from "./types/response.js";
+import type {CreateHtmlCssImageRequest, CreateTemplatedImageRequest, CreateUrlImageRequest} from "./types/request.js";
+import type {CreateImageBatchResponse, CreateImageResponse} from "./types/response.js";
 
 export interface IHtmlCssToImageClient {
     createImage(request: CreateHtmlCssImageRequest|CreateUrlImageRequest|CreateTemplatedImageRequest) : Promise<CreateImageResponse>;
