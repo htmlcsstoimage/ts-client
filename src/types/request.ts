@@ -153,6 +153,11 @@ export abstract class BaseCreateImageRequest {
     jumbo_max_height?: number;
 
     /**
+     * Render the image with a transparent background.
+     */
+    transparent_background?: boolean;
+
+    /**
      * Options for generating a PDF from the HTML/CSS or Url.
      */
     pdf_options?: PDFOptions;

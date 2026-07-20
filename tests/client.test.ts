@@ -76,6 +76,7 @@ describe('HtmlCssToImageClient', () => {
             const body = JSON.parse(options.body);
             assert.strictEqual(body.url, 'https://example.com');
             assert.strictEqual(body.css, 'body { background: black; }');
+            assert.strictEqual(body.transparent_background, false);
 
             return {
                 ok: true,
@@ -86,21 +87,24 @@ describe('HtmlCssToImageClient', () => {
         const client = new HtmlCssToImageClient(apiId, apiKey, mockFetch as any);
         const result = await client.createImage(new CreateUrlImageRequest({
             url: 'https://example.com',
-            css: 'body { background: black; }'
+            css: 'body { background: black; }',
+            transparent_background: false
         }));
 
         assert.strictEqual(result.success, true);
     });
 
-    test('generateCreateAndRenderUrl includes CSS for URL screenshots', () => {
+    test('generateCreateAndRenderUrl includes CSS and an explicit transparent background value', () => {
         const client = new HtmlCssToImageClient(apiId, apiKey);
         const url = client.generateCreateAndRenderUrl(new CreateUrlImageRequest({
             url: 'https://example.com',
-            css: 'body { background: black; }'
+            css: 'body { background: black; }',
+            transparent_background: false
         }));
 
         const parsedUrl = new URL(url);
         assert.strictEqual(parsedUrl.searchParams.get('css'), 'body { background: black; }');
+        assert.strictEqual(parsedUrl.searchParams.get('transparent_background'), 'false');
     });
 
     test('createImageBatch correctly maps and sends batch request', async () => {
