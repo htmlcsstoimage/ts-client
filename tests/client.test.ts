@@ -94,6 +94,67 @@ describe('HtmlCssToImageClient', () => {
         assert.strictEqual(result.success, true);
     });
 
+    test('deleteImage sends an authenticated DELETE request', async () => {
+        const mockFetch = async (url: string, options: any) => {
+            assert.strictEqual(url, 'https://hcti.io/v1/image/image%2Fid');
+            assert.strictEqual(options.method, 'DELETE');
+            assert.strictEqual(options.headers.Authorization, `Basic ${Buffer.from(`${apiId}:${apiKey}`).toString('base64')}`);
+            assert.strictEqual(options.body, undefined);
+
+            return {
+                ok: true,
+                status: 202,
+            } as Response;
+        };
+
+        const client = new HtmlCssToImageClient(apiId, apiKey, mockFetch as any);
+        const result = await client.deleteImage('image/id');
+
+        assert.deepStrictEqual(result, {success: true});
+    });
+
+    test('deleteImage returns API error details', async () => {
+        const mockFetch = async () => ({
+            ok: false,
+            status: 404,
+            json: async () => ({
+                error: 'Not Found',
+                message: 'Image not found',
+            }),
+        } as Response);
+
+        const client = new HtmlCssToImageClient(apiId, apiKey, mockFetch as any);
+        const result = await client.deleteImage('missing-image');
+
+        assert.strictEqual(result.success, false);
+        if (!result.success) {
+            assert.strictEqual(result.error, 'Not Found');
+            assert.strictEqual(result.message, 'Image not found');
+        }
+    });
+
+    test('deleteImageBatch sends image IDs in an authenticated DELETE request', async () => {
+        const mockFetch = async (url: string, options: any) => {
+            assert.strictEqual(url, 'https://hcti.io/v1/image/batch');
+            assert.strictEqual(options.method, 'DELETE');
+            assert.strictEqual(options.headers.Authorization, `Basic ${Buffer.from(`${apiId}:${apiKey}`).toString('base64')}`);
+            assert.strictEqual(options.headers['Content-Type'], 'application/json');
+            assert.deepStrictEqual(JSON.parse(options.body), {
+                ids: ['image-1', 'image-2'],
+            });
+
+            return {
+                ok: true,
+                status: 202,
+            } as Response;
+        };
+
+        const client = new HtmlCssToImageClient(apiId, apiKey, mockFetch as any);
+        const result = await client.deleteImageBatch(['image-1', 'image-2']);
+
+        assert.deepStrictEqual(result, {success: true});
+    });
+
     test('generateCreateAndRenderUrl includes CSS and an explicit transparent background value', () => {
         const client = new HtmlCssToImageClient(apiId, apiKey);
         const url = client.generateCreateAndRenderUrl(new CreateUrlImageRequest({

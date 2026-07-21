@@ -67,6 +67,23 @@ if (result.success) {
 }
 ```
 
+### Delete Images
+
+Delete one or more existing images from HCTI and clear them from the CDN using their image IDs.
+
+```typescript
+const result = await client.deleteImage('your_image_id');
+
+if (!result.success) {
+  console.error('Error:', result.error);
+}
+
+const batchResult = await client.deleteImageBatch([
+  'first_image_id',
+  'second_image_id'
+]);
+```
+
 ## Creating Image URLs
 
 For use cases where you want to generate a URL on the server and use it safely on the client (without exposing your API key), you can generate a signed URL.

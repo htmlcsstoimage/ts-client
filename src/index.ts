@@ -21,6 +21,8 @@ export type {
     CreateImageErrorResponse,
     CreateImageResponse,
     CreateImageSuccessResponse,
+    DeleteImageResponse,
+    DeleteImageSuccessResponse,
     ValidationError
 } from './types/response.js';
 export { HtmlCssToImageClient } from './HtmlCssToImageClient.js';
