@@ -1,7 +1,7 @@
 import type {IHtmlCssToImageClient} from "./IHtmlCssToImageClient.js";
 import {CreateTemplatedImageRequest} from "./types/request.js";
 import type {BaseCreateImageRequest, CreateHtmlCssImageRequest, CreateUrlImageRequest, PDFOptions, PdfValueInput} from "./types/request.js";
-import type {CreateImageBatchResponse, CreateImageBatchSuccessResponse, CreateImageResponse} from "./types/response.js";
+import type {CreateImageBatchResponse, CreateImageBatchSuccessResponse, CreateImageErrorResponse, CreateImageResponse, DeleteImageResponse} from "./types/response.js";
 import * as crypto from 'node:crypto';
 
 export type FetchFunction = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
@@ -94,6 +94,30 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
         return await this.responseToType<CreateImageResponse>(response);
 
 
+    }
+
+    async deleteImage(imageId: string): Promise<DeleteImageResponse> {
+        const response = await this.fetch(`${this.baseUrl}/v1/image/${encodeURIComponent(imageId)}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': this.authHeader,
+            },
+        });
+
+        return await this.responseToDeleteImageResponse(response);
+    }
+
+    async deleteImageBatch(imageIds: readonly string[]): Promise<DeleteImageResponse> {
+        const response = await this.fetch(`${this.baseUrl}/v1/image/batch`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': this.authHeader,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ids: imageIds}),
+        });
+
+        return await this.responseToDeleteImageResponse(response);
     }
 
     private mapToInternal(request: CreateHtmlCssImageRequest | CreateUrlImageRequest | CreateTemplatedImageRequest, in_batch: boolean): any {
@@ -208,6 +232,14 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
         } else {
             return { success: false, ...response_json } as T;
         }
+    }
+
+    private async responseToDeleteImageResponse(response: Response): Promise<DeleteImageResponse> {
+        if (response.ok) {
+            return {success: true};
+        }
+
+        return await this.responseToType<CreateImageErrorResponse>(response);
     }
 
     private mapHtmlCssToInternalRequest(request: CreateHtmlCssImageRequest, in_batch: boolean): InternalCreateHtmlCssImageRequest | InternalCreateHtmlCssImageRequestWithOptionalHtml {

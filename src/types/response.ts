@@ -21,6 +21,12 @@ export interface CreateImageBatchSuccessResponse{
     images: CreateImageSuccessResponse[];
 }
 
+export interface DeleteImageSuccessResponse {
+    success: true;
+}
+
 export type CreateImageBatchResponse = CreateImageBatchSuccessResponse | CreateImageErrorResponse;
 
 export type CreateImageResponse = CreateImageSuccessResponse | CreateImageErrorResponse;
+
+export type DeleteImageResponse = DeleteImageSuccessResponse | CreateImageErrorResponse;
