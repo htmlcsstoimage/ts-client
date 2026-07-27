@@ -143,6 +143,11 @@ export abstract class BaseCreateImageRequest {
     proxy_id?: string;
 
     /**
+     * Save rendered images to one of the organization's configured storage destinations.
+     */
+    storage_destination_id?: string;
+
+    /**
      * Set the maximum width in jumbo mode. jumbo_max_height must also be defined.
      */
     jumbo_max_width?: number;
