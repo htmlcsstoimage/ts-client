@@ -1,5 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert';
+import {createHmac} from 'node:crypto';
 import { HtmlCssToImageClient } from '../src/HtmlCssToImageClient.js';
 import {CreateHtmlCssImageRequest, CreateTemplatedImageRequest, CreateUrlImageRequest, PDFOptions} from '../src/types/request.js';
 import type {CreateImageSuccessResponse} from "../src/types/response.js";
@@ -94,6 +95,44 @@ describe('HtmlCssToImageClient', () => {
         assert.strictEqual(result.success, true);
     });
 
+    test('createImage sends URL headers as a JSON object with header options', async () => {
+        const mockFetch = async (_url: string, options: any) => {
+            const body = JSON.parse(options.body);
+            assert.deepStrictEqual(body.headers, {
+                Cookie: 'session=test',
+                Authorization: 'Bearer test'
+            });
+            assert.deepStrictEqual(body.additional_header_origins, [
+                'https://api.example.com',
+                'https://assets.example.com:8443'
+            ]);
+            assert.strictEqual(body.include_headers_on_subrequests, true);
+            assert.strictEqual(body.identify_as_hcti, true);
+
+            return {
+                ok: true,
+                json: async () => ({id: '123', url: 'https://hcti.io/v1/image/123'})
+            };
+        };
+
+        const client = new HtmlCssToImageClient(apiId, apiKey, mockFetch as any);
+        const result = await client.createImage(new CreateUrlImageRequest({
+            url: 'https://example.com/private',
+            headers: {
+                Cookie: 'session=test',
+                Authorization: 'Bearer test'
+            },
+            additional_header_origins: [
+                'https://api.example.com',
+                'https://assets.example.com:8443'
+            ],
+            include_headers_on_subrequests: true,
+            identify_as_hcti: true
+        }));
+
+        assert.strictEqual(result.success, true);
+    });
+
     test('deleteImage sends an authenticated DELETE request', async () => {
         const mockFetch = async (url: string, options: any) => {
             assert.strictEqual(url, 'https://hcti.io/v1/image/image%2Fid');
@@ -166,6 +205,41 @@ describe('HtmlCssToImageClient', () => {
         const parsedUrl = new URL(url);
         assert.strictEqual(parsedUrl.searchParams.get('css'), 'body { background: black; }');
         assert.strictEqual(parsedUrl.searchParams.get('transparent_background'), 'false');
+    });
+
+    test('generateCreateAndRenderUrl repeats headers and signs the exact query string', () => {
+        const client = new HtmlCssToImageClient(apiId, apiKey);
+        const url = client.generateCreateAndRenderUrl(new CreateUrlImageRequest({
+            url: 'https://example.com/private',
+            headers: {
+                Authorization: 'Bearer test:value',
+                'X-Preview-Mode': 'enabled'
+            },
+            additional_header_origins: [
+                'https://api.example.com',
+                'https://assets.example.com:8443'
+            ],
+            include_headers_on_subrequests: true,
+            identify_as_hcti: true
+        }));
+
+        const parsedUrl = new URL(url);
+        assert.deepStrictEqual(parsedUrl.searchParams.getAll('headers'), [
+            'Authorization:Bearer test:value',
+            'X-Preview-Mode:enabled'
+        ]);
+        assert.deepStrictEqual(parsedUrl.searchParams.getAll('additional_header_origins'), [
+            'https://api.example.com',
+            'https://assets.example.com:8443'
+        ]);
+        assert.strictEqual(parsedUrl.searchParams.get('include_headers_on_subrequests'), 'true');
+        assert.strictEqual(parsedUrl.searchParams.get('identify_as_hcti'), 'true');
+
+        const token = parsedUrl.pathname.split('/').at(-1);
+        const expectedToken = createHmac('sha256', apiKey)
+            .update(parsedUrl.search.slice(1))
+            .digest('hex');
+        assert.strictEqual(token, expectedToken);
     });
 
     test('createImageBatch correctly maps and sends batch request', async () => {

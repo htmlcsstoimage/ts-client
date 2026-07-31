@@ -33,6 +33,10 @@ type InternalCreateHtmlCssImageRequestWithOptionalHtml = InternalBaseCreateReque
 type InternalCreateUrlImageRequest = InternalBaseCreateRequest & {
     url: string;
     css?: string;
+    headers?: Record<string, string>;
+    additional_header_origins?: string[];
+    include_headers_on_subrequests?: boolean;
+    identify_as_hcti?: boolean;
     full_screen?: boolean;
     block_consent_banners?: boolean;
 };
@@ -40,6 +44,10 @@ type InternalCreateUrlImageRequest = InternalBaseCreateRequest & {
 type InternalCreateUrlImageRequestWithOptionalUrl = InternalBaseCreateRequest & {
     url?: string;
     css?: string;
+    headers?: Record<string, string>;
+    additional_header_origins?: string[];
+    include_headers_on_subrequests?: boolean;
+    identify_as_hcti?: boolean;
     full_screen?: boolean;
     block_consent_banners?: boolean;
 };
@@ -206,6 +214,18 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
             .sort((a, b) => a[0].localeCompare(b[0]))
             .forEach(([key, value]) => {
                 if (value !== undefined && value !== null && (value !== false || key === 'transparent_background')) {
+                    if (key === 'headers') {
+                        Object.entries(value as Record<string, string>).forEach(([name, headerValue]) => {
+                            params.append('headers', `${name}:${headerValue}`);
+                        });
+                        return;
+                    }
+                    if (key === 'additional_header_origins') {
+                        (value as string[]).forEach(origin => {
+                            params.append('additional_header_origins', origin);
+                        });
+                        return;
+                    }
                     params.append(key, value.toString())
                 }
             });

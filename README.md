@@ -55,8 +55,15 @@ if (result.success) {
 import { CreateUrlImageRequest } from '@html-css-to-image/client';
 
 const request = new CreateUrlImageRequest({
-  url: 'https://example.com',
+  url: 'https://example.com/private-report',
   css: '.cookie-banner { display: none; }',
+  headers: {
+    Authorization: 'Bearer short-lived-token',
+    'X-Preview-Mode': 'enabled'
+  },
+  additional_header_origins: ['https://api.example.com'],
+  include_headers_on_subrequests: true,
+  identify_as_hcti: true,
   full_screen: true
 });
 
@@ -66,6 +73,8 @@ if (result.success) {
   console.log('Image URL:', result.url);
 }
 ```
+
+Custom `headers` are restricted to the requested URL's origin. Set `include_headers_on_subrequests: true` when same-origin resources also require them, and use `additional_header_origins` to allow an exact cross-origin scheme, host, and port. See the [custom headers documentation](https://docs.htmlcsstoimage.com/parameters/headers/) for the complete request formats and security guidance.
 
 ### Delete Images
 
@@ -128,6 +137,8 @@ const signedUrl = client.generateCreateAndRenderUrl(url_request);
 
 // now it's safe to use signedUrl on the frontend in a meta or img tag, without exposing your API key, and it will be kept updated as the updated_at changes.
 ```
+
+The helper serializes custom headers as repeated `headers=name:value` query parameters and each `additional_header_origins` entry as a repeated query parameter. Do not include secrets in signed URLs because the header values remain visible in the URL.
 
 ### Using Templates
 

@@ -216,6 +216,31 @@ export class CreateUrlImageRequest extends BaseCreateImageRequest {
     css?: string;
 
     /**
+     * Custom HTTP headers for top-level requests to the requested URL's origin
+     * and any additional_header_origins.
+     * @see https://docs.htmlcsstoimage.com/parameters/headers/
+     */
+    headers?: Record<string, string>;
+
+    /**
+     * Additional exact HTTP or HTTPS origins allowed to receive custom headers.
+     * @see https://docs.htmlcsstoimage.com/parameters/headers/#additional-header-origins
+     */
+    additional_header_origins?: string[];
+
+    /**
+     * Also send custom headers with subrequests to allowed origins.
+     * @see https://docs.htmlcsstoimage.com/parameters/headers/#include-headers-on-subrequests
+     */
+    include_headers_on_subrequests?: boolean;
+
+    /**
+     * Add X-HCTI-SCREENSHOT: 1 to the top-level page request.
+     * @see https://docs.htmlcsstoimage.com/parameters/identify_as_hcti/
+     */
+    identify_as_hcti?: boolean;
+
+    /**
      * Indicates whether the screenshot should capture the entire webpage in full height.
      *
      * When set to true, this property ensures that the screenshot includes the full vertical content of the webpage,
