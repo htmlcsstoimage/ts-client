@@ -210,7 +210,7 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
         const params = new URLSearchParams();
         params.append('url', request.url);
         Object.entries(request)
-            .filter(([key, _]) => key !== 'url' && key != 'pdf_options' && key !== '__type')
+            .filter(([key, _]) => key !== 'url' && key != 'pdf_options' && key !== 'dedupe_duration_s' && key !== '__type')
             .sort((a, b) => a[0].localeCompare(b[0]))
             .forEach(([key, value]) => {
                 if (value !== undefined && value !== null && (value !== false || key === 'transparent_background')) {

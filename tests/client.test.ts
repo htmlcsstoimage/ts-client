@@ -17,6 +17,7 @@ describe('HtmlCssToImageClient', () => {
 
             // Verify the mapping logic (internal serialization)
             assert.strictEqual(body.html, '<h1>Test</h1>');
+            assert.strictEqual(body.dedupe_duration_s, 3600);
             assert.deepStrictEqual(body.pdf_options.margins, ['10px', '20px', '5mm', '20in']);
             assert.strictEqual(body.google_fonts, 'Roboto|Open+Sans');
 
@@ -29,6 +30,7 @@ describe('HtmlCssToImageClient', () => {
 
         const request = new CreateHtmlCssImageRequest({
             html: '<h1>Test</h1>',
+            dedupe_duration_s: 3600,
             google_fonts: ['Roboto', 'Open Sans','Open Sans'],
             pdf_options: new PDFOptions({
                 margins: {
@@ -194,17 +196,19 @@ describe('HtmlCssToImageClient', () => {
         assert.deepStrictEqual(result, {success: true});
     });
 
-    test('generateCreateAndRenderUrl includes CSS and an explicit transparent background value', () => {
+    test('generateCreateAndRenderUrl includes supported values and omits POST-only deduplication', () => {
         const client = new HtmlCssToImageClient(apiId, apiKey);
         const url = client.generateCreateAndRenderUrl(new CreateUrlImageRequest({
             url: 'https://example.com',
             css: 'body { background: black; }',
-            transparent_background: false
+            transparent_background: false,
+            dedupe_duration_s: 3600
         }));
 
         const parsedUrl = new URL(url);
         assert.strictEqual(parsedUrl.searchParams.get('css'), 'body { background: black; }');
         assert.strictEqual(parsedUrl.searchParams.get('transparent_background'), 'false');
+        assert.strictEqual(parsedUrl.searchParams.get('dedupe_duration_s'), null);
     });
 
     test('generateCreateAndRenderUrl repeats headers and signs the exact query string', () => {
