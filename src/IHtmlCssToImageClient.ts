@@ -1,4 +1,4 @@
-import type {CreateHtmlCssImageRequest, CreateTemplatedImageRequest, CreateUrlImageRequest} from "./types/request.js";
+import type {CreateHtmlCssImageRequest, CreateTemplatedImageRequest, CreateUrlImageRequest, RenderImageFormat} from "./types/request.js";
 import type {CreateImageBatchResponse, CreateImageResponse, DeleteImageResponse} from "./types/response.js";
 
 export interface IHtmlCssToImageClient {
@@ -7,6 +7,6 @@ export interface IHtmlCssToImageClient {
     deleteImage(imageId: string): Promise<DeleteImageResponse>;
     deleteImageBatch(imageIds: readonly string[]): Promise<DeleteImageResponse>;
     generateCreateAndRenderUrl(request: CreateUrlImageRequest): string;
-    generateTemplatedImageUrl<T extends Record<string,any>>(template_id: string, template_values: T, template_version?: number):string;
+    generateTemplatedImageUrl<T extends Record<string,any>>(template_id: string, template_values: T, template_version?: number, format?: RenderImageFormat):string;
     generateTemplatedImageUrl(request: CreateTemplatedImageRequest):string;
 }

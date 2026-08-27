@@ -1,6 +1,6 @@
 import type {IHtmlCssToImageClient} from "./IHtmlCssToImageClient.js";
 import {CreateTemplatedImageRequest} from "./types/request.js";
-import type {BaseCreateImageRequest, CreateHtmlCssImageRequest, CreateUrlImageRequest, PDFOptions, PdfValueInput} from "./types/request.js";
+import type {BaseCreateImageRequest, CreateHtmlCssImageRequest, CreateUrlImageRequest, PDFOptions, PdfValueInput, RenderImageFormat} from "./types/request.js";
 import type {CreateImageBatchResponse, CreateImageBatchSuccessResponse, CreateImageErrorResponse, CreateImageResponse, DeleteImageResponse} from "./types/response.js";
 import * as crypto from 'node:crypto';
 
@@ -171,13 +171,14 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
     }
 
 
-    generateTemplatedImageUrl<T extends Record<string, any>>(templateIdOrRequest: string | CreateTemplatedImageRequest<T>, templateValues?: T, templateVersion?: number): string {
+    generateTemplatedImageUrl<T extends Record<string, any>>(templateIdOrRequest: string | CreateTemplatedImageRequest<T>, templateValues?: T, templateVersion?: number, format?: RenderImageFormat): string {
         let request: CreateTemplatedImageRequest;
         if (typeof templateIdOrRequest === 'string') {
             request = new CreateTemplatedImageRequest({
                 template_id: templateIdOrRequest,
                 template_values: templateValues || {},
-                template_version: templateVersion
+                template_version: templateVersion,
+                format
             })
         } else {
             request = templateIdOrRequest;
@@ -203,14 +204,15 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
         }
         const queryString = params.toString();
         const token = this.generateHmacToken(queryString);
-        return `${this.baseUrl}/v1/image/${request.template_id}/${token}${queryString ? '?' : ''}${queryString}`;
+        const formatPath = request.format ? `/${request.format}` : '';
+        return `${this.baseUrl}/v1/image/${request.template_id}/${token}${formatPath}${queryString ? '?' : ''}${queryString}`;
     }
 
     generateCreateAndRenderUrl(request: CreateUrlImageRequest): string {
         const params = new URLSearchParams();
         params.append('url', request.url);
         Object.entries(request)
-            .filter(([key, _]) => key !== 'url' && key != 'pdf_options' && key !== 'dedupe_duration_s' && key !== '__type')
+            .filter(([key, _]) => key !== 'url' && key !== 'format' && key != 'pdf_options' && key !== 'dedupe_duration_s' && key !== '__type')
             .sort((a, b) => a[0].localeCompare(b[0]))
             .forEach(([key, value]) => {
                 if (value !== undefined && value !== null && (value !== false || key === 'transparent_background')) {
@@ -231,7 +233,8 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
             });
         const queryString = params.toString();
         const token = this.generateHmacToken(queryString);
-        return `${this.baseUrl}/v1/image/create-and-render/${this.apiId}/${token}?${queryString}`;
+        const formatPath = request.format ? `/${request.format}` : '';
+        return `${this.baseUrl}/v1/image/create-and-render/${this.apiId}/${token}${formatPath}?${queryString}`;
     }
 
     private async responseToType<T>(response: Response): Promise<T> {

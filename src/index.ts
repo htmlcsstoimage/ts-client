@@ -12,7 +12,8 @@ export type {
     PdfMargins,
     PdfValueInput,
     PdfValueWithUnits,
-    PdfUnit
+    PdfUnit,
+    RenderImageFormat
 } from './types/request.js';
 
 export type {

@@ -17,6 +17,7 @@ describe('HtmlCssToImageClient', () => {
 
             // Verify the mapping logic (internal serialization)
             assert.strictEqual(body.html, '<h1>Test</h1>');
+            assert.strictEqual(body.format, 'webp');
             assert.strictEqual(body.dedupe_duration_s, 3600);
             assert.deepStrictEqual(body.pdf_options.margins, ['10px', '20px', '5mm', '20in']);
             assert.strictEqual(body.google_fonts, 'Roboto|Open+Sans');
@@ -30,6 +31,7 @@ describe('HtmlCssToImageClient', () => {
 
         const request = new CreateHtmlCssImageRequest({
             html: '<h1>Test</h1>',
+            format: 'webp',
             dedupe_duration_s: 3600,
             google_fonts: ['Roboto', 'Open Sans','Open Sans'],
             pdf_options: new PDFOptions({
@@ -58,6 +60,7 @@ describe('HtmlCssToImageClient', () => {
             assert.strictEqual(body.__type, undefined);
             assert.strictEqual(body.template_id, 'template-id');
             assert.deepStrictEqual(body.template_values, {title: 'Hello'});
+            assert.strictEqual(body.format, 'pdf');
 
             return {
                 ok: true,
@@ -68,7 +71,8 @@ describe('HtmlCssToImageClient', () => {
         const client = new HtmlCssToImageClient(apiId, apiKey, mockFetch as any);
         const result = await client.createImage(new CreateTemplatedImageRequest({
             template_id: 'template-id',
-            template_values: {title: 'Hello'}
+            template_values: {title: 'Hello'},
+            format: 'pdf'
         }));
 
         assert.strictEqual(result.success, true);
@@ -201,6 +205,7 @@ describe('HtmlCssToImageClient', () => {
         const url = client.generateCreateAndRenderUrl(new CreateUrlImageRequest({
             url: 'https://example.com',
             css: 'body { background: black; }',
+            format: 'webp',
             transparent_background: false,
             dedupe_duration_s: 3600
         }));
@@ -209,6 +214,8 @@ describe('HtmlCssToImageClient', () => {
         assert.strictEqual(parsedUrl.searchParams.get('css'), 'body { background: black; }');
         assert.strictEqual(parsedUrl.searchParams.get('transparent_background'), 'false');
         assert.strictEqual(parsedUrl.searchParams.get('dedupe_duration_s'), null);
+        assert.strictEqual(parsedUrl.searchParams.get('format'), null);
+        assert.ok(parsedUrl.pathname.endsWith('/webp'));
     });
 
     test('generateCreateAndRenderUrl repeats headers and signs the exact query string', () => {
@@ -254,6 +261,7 @@ describe('HtmlCssToImageClient', () => {
 
             // Verify default options
             assert.strictEqual(body.default_options.viewport_width, 1280);
+            assert.strictEqual(body.default_options.format, 'jpg');
 
             // Verify variations mapping
             assert.strictEqual(body.variations.length, 2);
@@ -269,7 +277,7 @@ describe('HtmlCssToImageClient', () => {
                 new CreateHtmlCssImageRequest({ html: '<h1>V1</h1>' }),
                 new CreateHtmlCssImageRequest({ html: '<h1>V2</h1>', pdf_options: new PDFOptions({ margins: {top: 1, bottom: {value: 2, unit: 'cm'}, left: 3, right: 4}}) })
             ];
-            const defaults = new CreateHtmlCssImageRequest({ html: '', viewport_width: 1280 });
+            const defaults = new CreateHtmlCssImageRequest({ html: '', viewport_width: 1280, format: 'jpg' });
             const client = new HtmlCssToImageClient(apiId, apiKey, mockFetch as any);
             const result = await client.createImageBatch(variations, defaults);
             assert.strictEqual(result.success, true);
@@ -325,6 +333,22 @@ describe('HtmlCssToImageClient', () => {
         const parts = parsed_url.pathname.split('/');
         assert.strictEqual(parts[parts.length - 1].length, 64);
 
+    });
+
+    test('generateTemplatedImageUrl appends the requested format to the path', () => {
+        const client = new HtmlCssToImageClient(apiId, apiKey);
+        const url = client.generateTemplatedImageUrl(
+            new CreateTemplatedImageRequest({
+                template_id: 'my-template',
+                template_values: {name: 'Bob'},
+                format: 'pdf'
+            })
+        );
+        const parsedUrl = new URL(url);
+
+        assert.ok(parsedUrl.pathname.endsWith('/pdf'));
+        assert.strictEqual(parsedUrl.searchParams.get('format'), null);
+        assert.strictEqual(parsedUrl.pathname.split('/').at(-2)?.length, 64);
     });
 
     test('createImage handles validation errors correctly', async () => {

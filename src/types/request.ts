@@ -1,6 +1,7 @@
 export type ColorSchemeType = 'light' | 'dark';
 export type PdfUnit = 'px' | 'in' | 'cm' | 'mm';
 export type MediaType = 'print' | 'screen';
+export type RenderImageFormat = 'png' | 'jpg' | 'webp' | 'pdf';
 
 export interface PdfValueWithUnits {
     value: number;
@@ -60,6 +61,19 @@ export class PDFOptions {
 
 
 export abstract class BaseCreateImageRequest {
+    /**
+     * The file format used in the URL returned by the image creation request.
+     *
+     * This option is supported for HTML/CSS and URL requests, including batch
+     * requests. It only changes the extension of the initially returned URL;
+     * it does not change the stored image definition or prevent the image from
+     * being rendered in another supported format. When omitted, the API
+     * returns its default image URL.
+     *
+     * @see https://docs.htmlcsstoimage.com/getting-started/using-the-api/#file-formats
+     */
+    format?: RenderImageFormat;
+
     /**
      * A CSS selector to target a specific element on the page.
      * The API will crop the image to the dimensions of this element.
@@ -271,6 +285,18 @@ export class CreateUrlImageRequest extends BaseCreateImageRequest {
 
 export class CreateTemplatedImageRequest<T = Record<string, any>> {
     readonly __type = 'templated' as const;
+    /**
+     * The file format used in the URL returned by the image creation request.
+     *
+     * This only changes the extension of the initially returned URL; it does
+     * not change the stored image definition or prevent the image from being
+     * rendered in another supported format. When omitted, the API returns its
+     * default image URL.
+     *
+     * @see https://docs.htmlcsstoimage.com/getting-started/using-the-api/#file-formats
+     */
+    format?: RenderImageFormat;
+
     /**
      * Identifies the specific template to be used.
      */

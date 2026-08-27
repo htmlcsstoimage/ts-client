@@ -37,7 +37,8 @@ import { CreateHtmlCssImageRequest } from '@html-css-to-image/client';
 const request = new CreateHtmlCssImageRequest({
   html: '<h1>Hello World</h1>',
   css: 'h1 { color: blue; }',
-  google_fonts: ['Roboto']
+  google_fonts: ['Roboto'],
+  format: 'webp'
 });
 
 const result = await client.createImage(request);
@@ -112,7 +113,7 @@ These methods are handy when you have a lot of content that may never be rendere
 ```typescript
 const signedUrl = client.generateTemplatedImageUrl('your_template_id', {
   title: 'Dynamic Title'
-});
+}, undefined, 'webp');
 
 console.log('Signed URL:', signedUrl);
 ```
@@ -131,6 +132,7 @@ const this_item = {
 };
 const url_request = new CreateUrlImageRequest({
     url: `https://website.com/_social/${this_item.id}?updated_at=${this_item.updated_at.valueOf()}`,
+    format: 'webp',
     viewport_width: 600,
     viewport_height: 200});
 const signedUrl = client.generateCreateAndRenderUrl(url_request);
@@ -149,6 +151,7 @@ import { CreateTemplatedImageRequest } from '@html-css-to-image/client';
 
 const result = await client.createImage(new CreateTemplatedImageRequest({
   template_id: 'your_template_id',
+  format: 'jpg',
   template_values: {
     title: 'Hello from Template',
     subtitle: 'This is a dynamic value'
@@ -165,6 +168,7 @@ import { CreateHtmlCssImageRequest, PDFOptions } from '@html-css-to-image/client
 
 const request = new CreateHtmlCssImageRequest({
     html: '<h1>This will be a PDF</h1>',
+    format: 'pdf',
     pdf_options: new PDFOptions({
         // Use numbers for pixels (default)
         // Or use an object for specific units (in, cm, mm, px)
@@ -193,7 +197,8 @@ const variations = [
 ];
 
 const defaults = new CreateHtmlCssImageRequest({ 
-  css: 'h1 { color: red; }' 
+  css: 'h1 { color: red; }',
+  format: 'webp'
 });
 
 const result = await client.createImageBatch(variations, defaults);
