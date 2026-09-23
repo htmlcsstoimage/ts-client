@@ -126,7 +126,7 @@ export abstract class BaseCreateImageRequest {
     dedupe_duration_s?: number;
 
     /**
-     * Disable Twemoji fallback rendering.
+     * HTML/CSS images use Twemoji by default; true disables it. URL images inject Twemoji only when explicitly false; omission or true leaves the page's emoji handling unchanged.
      */
     disable_twemoji?: boolean;
 
