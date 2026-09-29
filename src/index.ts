@@ -3,7 +3,9 @@ export {
     CreateHtmlCssImageRequest,
     CreateTemplatedImageRequest,
     CreateUrlImageRequest,
-    PDFOptions
+    PDFOptions,
+    RequestOverrideAction,
+    RequestOverrideResourceType
 } from './types/request.js';
 
 export type {
@@ -13,7 +15,8 @@ export type {
     PdfValueInput,
     PdfValueWithUnits,
     PdfUnit,
-    RenderImageFormat
+    RenderImageFormat,
+    RequestOverride
 } from './types/request.js';
 
 export type {

@@ -2,7 +2,7 @@ import { test, describe } from 'node:test';
 import assert from 'node:assert';
 import {createHmac} from 'node:crypto';
 import { HtmlCssToImageClient } from '../src/HtmlCssToImageClient.js';
-import {CreateHtmlCssImageRequest, CreateTemplatedImageRequest, CreateUrlImageRequest, PDFOptions} from '../src/types/request.js';
+import {CreateHtmlCssImageRequest, CreateTemplatedImageRequest, CreateUrlImageRequest, PDFOptions, RequestOverrideAction, RequestOverrideResourceType} from '../src/types/request.js';
 import type {CreateImageSuccessResponse} from "../src/types/response.js";
 
 describe('HtmlCssToImageClient', () => {
@@ -76,6 +76,20 @@ describe('HtmlCssToImageClient', () => {
         }));
 
         assert.strictEqual(result.success, true);
+    });
+
+    test('request overrides serialize resource enums and stay out of signed URLs', async () => {
+        const rules = [{action: RequestOverrideAction.Block, url: '*.js', resource_types: [RequestOverrideResourceType.Script, RequestOverrideResourceType.Fetch]}];
+        const mockFetch = async (_url: string, options: any) => {
+            assert.deepStrictEqual(JSON.parse(options.body).request_overrides, [
+                {action: 'block', url: '*.js', resource_types: ['script', 'fetch']}
+            ]);
+            return {ok: true, json: async () => ({id: '123', url: 'image-url'})};
+        };
+        const client = new HtmlCssToImageClient(apiId, apiKey, mockFetch as any);
+        const request = new CreateUrlImageRequest({url: 'https://example.com', request_overrides: rules});
+        await client.createImage(request);
+        assert.strictEqual(new URL(client.generateCreateAndRenderUrl(request)).searchParams.has('request_overrides'), false);
     });
 
     test('createImage sends CSS with URL screenshot requests', async () => {

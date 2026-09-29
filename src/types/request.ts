@@ -3,6 +3,35 @@ export type PdfUnit = 'px' | 'in' | 'cm' | 'mm';
 export type MediaType = 'print' | 'screen';
 export type RenderImageFormat = 'png' | 'jpg' | 'webp' | 'pdf';
 
+export enum RequestOverrideResourceType {
+    Beacon = 'beacon',
+    Document = 'document',
+    Stylesheet = 'stylesheet',
+    Image = 'image',
+    ImageSet = 'image_set',
+    Media = 'media',
+    Font = 'font',
+    Script = 'script',
+    TextTrack = 'text_track',
+    Xhr = 'xhr',
+    Fetch = 'fetch',
+    EventSource = 'event_source',
+    Manifest = 'manifest',
+    Ping = 'ping',
+    Img = 'img',
+    Other = 'other',
+}
+
+export enum RequestOverrideAction {
+    Block = 'block',
+}
+
+export interface RequestOverride {
+    action: RequestOverrideAction.Block;
+    url?: string;
+    resource_types?: RequestOverrideResourceType[];
+}
+
 export interface PdfValueWithUnits {
     value: number;
     unit: PdfUnit;
@@ -164,6 +193,9 @@ export abstract class BaseCreateImageRequest {
      * Select an organization proxy for rendering.
      */
     proxy_id?: string;
+
+    /** Block matching browser network requests. Requires a paid plan. */
+    request_overrides?: RequestOverride[];
 
     /**
      * Save rendered images to one of the organization's configured storage destinations.
