@@ -348,3 +348,19 @@ export class CreateTemplatedImageRequest<T = Record<string, any>> {
         Object.assign(this, init);
     }
 }
+
+/** Shared defaults or one variation in a templated image batch. */
+export class TemplatedBatchImageOptions<T = Record<string, any>> {
+    /** Omit to inherit the default template. Supplying an ID resets the inherited version. */
+    template_id?: string;
+    /** Inherits the default version, or uses latest when a template_id is supplied. */
+    template_version?: number;
+    /** Objects merge recursively; arrays, scalars, and explicit null values replace defaults. */
+    template_values?: T;
+    /** File format of the returned URL; omitted values inherit the default format. */
+    format?: RenderImageFormat;
+
+    constructor(init?: Partial<TemplatedBatchImageOptions<T>>) {
+        Object.assign(this, init);
+    }
+}

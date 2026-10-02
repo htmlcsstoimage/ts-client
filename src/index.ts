@@ -2,6 +2,7 @@ export {
     BaseCreateImageRequest,
     CreateHtmlCssImageRequest,
     CreateTemplatedImageRequest,
+    TemplatedBatchImageOptions,
     CreateUrlImageRequest,
     PDFOptions,
     RequestOverrideAction,

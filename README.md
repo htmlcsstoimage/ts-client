@@ -237,3 +237,20 @@ const client = new HtmlCssToImageClient(apiId, apiKey, fetch);
 
 > [!TIP]
 > Get started for free at [htmlcsstoimage.com](https://htmlcsstoimage.com).
+
+## Templated image batches
+
+Create images from one or more templates with shared defaults and ordered variations:
+
+```typescript
+import {TemplatedBatchImageOptions} from '@html-css-to-image/client';
+
+const result = await client.createTemplatedImageBatch([
+  new TemplatedBatchImageOptions({template_values: {title: 'First'}}),
+  new TemplatedBatchImageOptions({template_id: 't-other', template_values: {title: 'Second'}})
+], new TemplatedBatchImageOptions({template_id: 't-card', template_version: 3, format: 'webp'}));
+```
+
+Omitted fields inherit defaults. Supplying a template ID resets the inherited version; omit its version to use latest. Template value objects merge recursively on the API; arrays, scalars, and explicit null values replace defaults. Results preserve input order and identical images reuse existing assets. Each merged values object must be nonempty and satisfy its template's required variables.
+
+See the [API reference](https://docs.htmlcsstoimage.com/getting-started/using-the-api/#batch-templated-image-creation) for plan limits and examples.

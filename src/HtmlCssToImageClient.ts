@@ -1,5 +1,5 @@
 import type {IHtmlCssToImageClient} from "./IHtmlCssToImageClient.js";
-import {CreateTemplatedImageRequest} from "./types/request.js";
+import {CreateTemplatedImageRequest, TemplatedBatchImageOptions} from "./types/request.js";
 import type {BaseCreateImageRequest, CreateHtmlCssImageRequest, CreateUrlImageRequest, PDFOptions, PdfValueInput, RenderImageFormat} from "./types/request.js";
 import type {CreateImageBatchResponse, CreateImageBatchSuccessResponse, CreateImageErrorResponse, CreateImageResponse, DeleteImageResponse} from "./types/response.js";
 import * as crypto from 'node:crypto';
@@ -170,6 +170,26 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
 
     }
 
+
+    /** Create a template batch, preserving variation order and leaving merging to the API. */
+    async createTemplatedImageBatch<T = Record<string, any>>(variations: TemplatedBatchImageOptions<T>[], default_options?: TemplatedBatchImageOptions<T>): Promise<CreateImageBatchResponse> {
+        if (variations.length === 0) {
+            return {success: true, images: []};
+        }
+        // Select only public batch fields, including when passed a single-image request.
+        const map = (options: TemplatedBatchImageOptions<T>) => ({
+            template_id: options.template_id,
+            template_version: options.template_version,
+            template_values: options.template_values,
+            format: options.format
+        });
+        const response = await this.fetch(`${this.baseUrl}/v1/image/batch/templated`, {
+            method: 'POST',
+            headers: {'Authorization': this.authHeader, 'Content-Type': 'application/json'},
+            body: JSON.stringify({variations: variations.map(map), default_options: default_options ? map(default_options) : undefined})
+        });
+        return await this.responseToType<CreateImageBatchResponse>(response);
+    }
 
     generateTemplatedImageUrl<T extends Record<string, any>>(templateIdOrRequest: string | CreateTemplatedImageRequest<T>, templateValues?: T, templateVersion?: number, format?: RenderImageFormat): string {
         let request: CreateTemplatedImageRequest;
