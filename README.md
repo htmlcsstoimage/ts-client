@@ -94,6 +94,85 @@ const batchResult = await client.deleteImageBatch([
 ]);
 ```
 
+## Recordings
+
+Create MP4, WebM, or GIF recordings with `createRecording`. Use `CreateUrlRecordingRequest` for a public webpage or `CreateHtmlCssRecordingRequest` for HTML/CSS:
+
+```typescript
+import {
+  CreateUrlRecordingRequest,
+  CreateHtmlCssRecordingRequest
+} from '@html-css-to-image/client';
+
+const result = await client.createRecording(new CreateUrlRecordingRequest({
+  url: 'https://example.com',
+  viewport_width: 1280,
+  viewport_height: 720,
+  duration_ms: 10000,
+  actions: [{type: 'simple_scroll'}],
+  output: {format: 'mp4'}
+}));
+
+if (result.success) {
+  // Embed or request this URL directly; it responds once the recording is ready.
+  console.log('Recording URL:', result.recording_url);
+} else {
+  console.error('Error:', result.error);
+}
+
+const animation = await client.createRecording(new CreateHtmlCssRecordingRequest({
+  html: '<h1>Hello</h1>',
+  css: '@keyframes fade { from { opacity: 0; } to { opacity: 1; } } h1 { animation: fade 2s; font-family: Roboto; }',
+  google_fonts: ['Roboto'],
+  duration_ms: 3000,
+  duration_mode: 'fixed',
+  output: {format: 'gif', scale: 0.5}
+}));
+```
+
+Both request types share browser settings, triggers, ordered timeline actions, and output options. Optional settings use the API defaults. Recordings do not include audio.
+
+Creation returns an ID, `status_url`, and `recording_url`. Embed the `recording_url` (in a `<video>` tag, or an `<img>` tag for GIFs) or request it directly; the request waits until the recording is ready, so there is no need to poll.
+
+Checking status is optional and useful for workflows that track progress or failures:
+
+```typescript
+const status = await client.fetchRecordingStatus(result.id);
+if (status.success) {
+  console.log('Recording status:', status.status);
+}
+```
+
+`fetchRecordingStatus` fetches the current state once; both HTTP 200 and 202 return `{success: true, ...}` with status information. The recording states `ready`, `failed`, and `cancelled` are terminal. A successful status fetch can report a failed recording, and a nonterminal recording can include an error from a previous attempt. A status this client version does not recognize, such as one added in a newer API version, is returned as `unknown`.
+
+Triggers and actions are typed objects with a `type` discriminator. For example, wait until a page element appears, then click a button and hold the result:
+
+```typescript
+const demo = await client.createRecording(new CreateUrlRecordingRequest({
+  url: 'https://example.com/demo',
+  duration_ms: 5000,
+  duration_mode: 'fixed',
+  trigger: {type: 'element_visible', selector: '#demo', timeout_ms: 2000},
+  actions: [
+    {type: 'click', selector: '#start', if_not_found: [{type: 'error'}]},
+    {type: 'stall', duration_ms: 1000}
+  ]
+}));
+```
+
+Nested branches run on the API. For JavaScript actions, omitting `if_error` or setting it to `null` fails the recording on a script error; `if_error: []` ignores the error.
+
+Delete recordings by ID, individually or in a batch:
+
+```typescript
+const deleted = await client.deleteRecording('recording-id');
+const batchDeleted = await client.deleteRecordingBatch(['first-id', 'second-id']);
+```
+
+Both delete methods return `{success: true}` when deletion is accepted, or the existing error response shape with `success: false`. `deleteRecordingBatch([])` returns `{success: true}` without making a request, as does `deleteImageBatch([])`.
+
+See the [recording guide](https://docs.htmlcsstoimage.com/getting-started/recordings/), [actions reference](https://docs.htmlcsstoimage.com/parameters/actions/), and [trigger reference](https://docs.htmlcsstoimage.com/parameters/trigger/) for options and examples.
+
 ## Creating Image URLs
 
 For use cases where you want to generate a URL on the server and use it safely on the client (without exposing your API key), you can generate a signed URL.
@@ -224,6 +303,7 @@ const client = new HtmlCssToImageClient(apiId, apiKey, fetch);
 
 - **Full TypeScript support**: Strongly typed requests and responses.
 - **HTML/CSS & URL Support**: Generate images from raw content or live websites.
+- **Recordings**: Record HTML/CSS or webpages as MP4, WebM, or GIF with scripted interactions.
 - **Templates**: Use your HCTI templates with dynamic data.
 - **Signed URLs**: Securely generate image URLs with HMAC authentication.
 - **PDF Support**: Comprehensive PDF generation options.

@@ -1,7 +1,26 @@
 import type {IHtmlCssToImageClient} from "./IHtmlCssToImageClient.js";
 import {CreateTemplatedImageRequest, TemplatedBatchImageOptions} from "./types/request.js";
-import type {BaseCreateImageRequest, CreateHtmlCssImageRequest, CreateUrlImageRequest, PDFOptions, PdfValueInput, RenderImageFormat} from "./types/request.js";
-import type {CreateImageBatchResponse, CreateImageBatchSuccessResponse, CreateImageErrorResponse, CreateImageResponse, DeleteImageResponse} from "./types/response.js";
+import type {
+    BaseCreateImageRequest,
+    CreateHtmlCssImageRequest,
+    CreateHtmlCssRecordingRequest,
+    CreateUrlImageRequest,
+    CreateUrlRecordingRequest,
+    PDFOptions,
+    PdfValueInput,
+    RenderImageFormat,
+} from "./types/request.js";
+import type {
+    CreateImageBatchResponse,
+    CreateImageBatchSuccessResponse,
+    CreateImageErrorResponse,
+    CreateImageResponse,
+    CreateRecordingResponse,
+    DeleteImageResponse,
+    DeleteRecordingResponse,
+    RecordingStatusResponse,
+} from "./types/response.js";
+import {knownRecordingStatuses} from "./types/recording.js";
 import * as crypto from 'node:crypto';
 
 export type FetchFunction = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
@@ -104,6 +123,62 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
 
     }
 
+    /** Create an HTML/CSS or URL recording. The returned recording_url can be embedded or requested directly and waits until the recording is ready.
+     * @see https://docs.htmlcsstoimage.com/getting-started/recordings/
+     */
+    async createRecording(request: CreateHtmlCssRecordingRequest | CreateUrlRecordingRequest): Promise<CreateRecordingResponse> {
+        const internal_request = this.mapRecordingToInternal(request);
+        const response = await this.fetch(`${this.baseUrl}/v1/recording`, {
+            method: 'POST',
+            headers: {
+                'Authorization': this.authHeader,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(internal_request),
+        });
+        return await this.responseToType<CreateRecordingResponse>(response);
+    }
+
+    /** Fetch the current recording status once. HTTP 200 and 202 both return status information. Unrecognized statuses are returned as unknown.
+     * @see https://docs.htmlcsstoimage.com/management-api/recordings/
+     */
+    async fetchRecordingStatus(recordingId: string): Promise<RecordingStatusResponse> {
+        const response = await this.fetch(`${this.baseUrl}/v1/recordings/${recordingId}/status`, {
+            method: 'GET',
+            headers: {'Authorization': this.authHeader},
+        });
+        const result = await this.responseToType<RecordingStatusResponse>(response);
+        if (result.success && !(knownRecordingStatuses as readonly string[]).includes(result.status)) {
+            result.status = 'unknown';
+        }
+        return result;
+    }
+
+    /** Delete a recording and clear its media from the CDN. */
+    async deleteRecording(recordingId: string): Promise<DeleteRecordingResponse> {
+        const response = await this.fetch(`${this.baseUrl}/v1/recordings/${recordingId}`, {
+            method: 'DELETE',
+            headers: {'Authorization': this.authHeader},
+        });
+        return await this.responseToDeleteResponse(response);
+    }
+
+    /** Delete multiple recordings in one API call. An empty list succeeds without a request. */
+    async deleteRecordingBatch(recordingIds: readonly string[]): Promise<DeleteRecordingResponse> {
+        if (recordingIds.length === 0) {
+            return {success: true};
+        }
+        const response = await this.fetch(`${this.baseUrl}/v1/recordings/batch`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': this.authHeader,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ids: recordingIds}),
+        });
+        return await this.responseToDeleteResponse(response);
+    }
+
     async deleteImage(imageId: string): Promise<DeleteImageResponse> {
         const response = await this.fetch(`${this.baseUrl}/v1/image/${encodeURIComponent(imageId)}`, {
             method: 'DELETE',
@@ -112,10 +187,13 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
             },
         });
 
-        return await this.responseToDeleteImageResponse(response);
+        return await this.responseToDeleteResponse(response);
     }
 
     async deleteImageBatch(imageIds: readonly string[]): Promise<DeleteImageResponse> {
+        if (imageIds.length === 0) {
+            return {success: true};
+        }
         const response = await this.fetch(`${this.baseUrl}/v1/image/batch`, {
             method: 'DELETE',
             headers: {
@@ -125,7 +203,25 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
             body: JSON.stringify({ids: imageIds}),
         });
 
-        return await this.responseToDeleteImageResponse(response);
+        return await this.responseToDeleteResponse(response);
+    }
+
+    private mapRecordingToInternal(request: CreateHtmlCssRecordingRequest | CreateUrlRecordingRequest) {
+        switch (request.__type) {
+            case 'html_css': {
+                const {__type, google_fonts, ...shared_request} = request;
+                return {
+                    ...shared_request,
+                    google_fonts: google_fonts === null ? null : this.mapGoogleFonts(google_fonts),
+                };
+            }
+            case 'url': {
+                const {__type, ...shared_request} = request;
+                return shared_request;
+            }
+            default:
+                throw new Error("Unsupported request type");
+        }
     }
 
     private mapToInternal(request: CreateHtmlCssImageRequest | CreateUrlImageRequest | CreateTemplatedImageRequest, in_batch: boolean): any {
@@ -277,7 +373,7 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
         }
     }
 
-    private async responseToDeleteImageResponse(response: Response): Promise<DeleteImageResponse> {
+    private async responseToDeleteResponse(response: Response): Promise<DeleteImageResponse> {
         if (response.ok) {
             return {success: true};
         }
@@ -298,14 +394,18 @@ export class HtmlCssToImageClient implements IHtmlCssToImageClient {
         }
 
         new_request.pdf_options = this.mapPDFOptionsToInternal(pdf_options);
+        new_request.google_fonts = this.mapGoogleFonts(google_fonts);
+        return new_request;
+    }
+
+    private mapGoogleFonts(google_fonts?: string[]): string | undefined {
         if (google_fonts && google_fonts.length > 0) {
             const processed_fonts = google_fonts
                 .map(font => font.trim().replace(/ /g, '+'))
                 .filter(font => font.length > 0);
-            const unique_fonts = [...new Set(processed_fonts)];
-            new_request.google_fonts = unique_fonts.join('|');
+            return [...new Set(processed_fonts)].join('|');
         }
-        return new_request;
+        return undefined;
     }
 
     private mapUrlToInternalRequest(request: CreateUrlImageRequest, in_batch: boolean): InternalCreateUrlImageRequest|InternalCreateUrlImageRequestWithOptionalUrl {
