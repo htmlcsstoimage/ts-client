@@ -214,6 +214,18 @@ describe('HtmlCssToImageClient', () => {
         assert.deepStrictEqual(result, {success: true});
     });
 
+    test('deleteImageBatch returns success for an empty list without a request', async () => {
+        let calls = 0;
+        const mockFetch = async () => {
+            calls++;
+            return {ok: true, status: 202} as Response;
+        };
+
+        const client = new HtmlCssToImageClient(apiId, apiKey, mockFetch as any);
+        assert.deepStrictEqual(await client.deleteImageBatch([]), {success: true});
+        assert.strictEqual(calls, 0);
+    });
+
     test('generateCreateAndRenderUrl includes supported values and omits POST-only deduplication', () => {
         const client = new HtmlCssToImageClient(apiId, apiKey);
         const url = client.generateCreateAndRenderUrl(new CreateUrlImageRequest({

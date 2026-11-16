@@ -1,5 +1,8 @@
 export {
     BaseCreateImageRequest,
+    BaseCreateRecordingRequest,
+    CreateHtmlCssRecordingRequest,
+    CreateUrlRecordingRequest,
     CreateHtmlCssImageRequest,
     CreateTemplatedImageRequest,
     TemplatedBatchImageOptions,
@@ -21,6 +24,11 @@ export type {
 } from './types/request.js';
 
 export type {
+    CreateRecordingResponse,
+    CreateRecordingSuccessResponse,
+    RecordingStatusResponse,
+    RecordingStatusSuccessResponse,
+    DeleteRecordingResponse,
     CreateImageBatchResponse,
     CreateImageBatchSuccessResponse,
     CreateImageErrorResponse,
@@ -33,3 +41,31 @@ export type {
 export { HtmlCssToImageClient } from './HtmlCssToImageClient.js';
 export type { FetchFunction } from './HtmlCssToImageClient.js';
 export type { IHtmlCssToImageClient } from './IHtmlCssToImageClient.js';
+
+export type {
+    RecordingFormat,
+    RecordingDurationMode,
+    RecordingStatus,
+    RecordingMouseButton,
+    RecordingOutputOptions,
+    RecordingTrigger,
+    RecordingImmediateTrigger,
+    RecordingElementVisibleTrigger,
+    RecordingFunctionCallTrigger,
+    RecordingAction,
+    RecordingSimpleScrollAction,
+    RecordingScrollAction,
+    RecordingStallAction,
+    RecordingLocateSelectorAction,
+    RecordingClickAction,
+    RecordingExecuteJavaScriptAction,
+    RecordingErrorAction,
+    RecordingError,
+    ScrollPosition,
+    ScrollEasing,
+    ScrollStep,
+    ScrollTarget,
+    PositionScrollTarget,
+    CoordinatesScrollTarget,
+    SelectorScrollTarget
+} from './types/recording.js';

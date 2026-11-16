@@ -1,3 +1,5 @@
+import type {RecordingAction, RecordingDurationMode, RecordingOutputOptions, RecordingTrigger} from "./recording.js";
+
 export type ColorSchemeType = 'light' | 'dark';
 export type PdfUnit = 'px' | 'in' | 'cm' | 'mm';
 export type MediaType = 'print' | 'screen';
@@ -361,6 +363,168 @@ export class TemplatedBatchImageOptions<T = Record<string, any>> {
     format?: RenderImageFormat;
 
     constructor(init?: Partial<TemplatedBatchImageOptions<T>>) {
+        Object.assign(this, init);
+    }
+}
+
+/**
+ * Shared browser settings and timeline options for recording HTML/CSS or a URL.
+ * Optional settings use the API defaults.
+ * @see https://docs.htmlcsstoimage.com/getting-started/recordings/
+ */
+export abstract class BaseCreateRecordingRequest {
+    /**
+     * Requested duration in milliseconds: 500–30000, or up to 90000 in target mode.
+     * duration_mode controls how actions fit into this duration.
+     * @see https://docs.htmlcsstoimage.com/parameters/duration_ms/
+     */
+    duration_ms!: number;
+    /**
+     * CSS to style HTML content or inject into a URL page after it loads.
+     * @see https://docs.htmlcsstoimage.com/parameters/css/
+     */
+    css?: string | null;
+    /**
+     * Capture pixel density. Defaults to 2 for HTML/CSS and 1 for URL recordings.
+     * @see https://docs.htmlcsstoimage.com/parameters/device_scale/
+     */
+    device_scale?: number | null;
+    /**
+     * Viewport height in CSS pixels. Supply both dimensions to set the recording size.
+     * @see https://docs.htmlcsstoimage.com/parameters/viewport/
+     */
+    viewport_height?: number | null;
+    /**
+     * Viewport width in CSS pixels. Supply both dimensions to set the recording size.
+     * @see https://docs.htmlcsstoimage.com/parameters/viewport/
+     */
+    viewport_width?: number | null;
+    /**
+     * Disable Twemoji for HTML/CSS when true. URL recordings inject it only when explicitly false.
+     * @see https://docs.htmlcsstoimage.com/parameters/disable_twemoji/
+     */
+    disable_twemoji?: boolean | null;
+    /**
+     * Reuse an identical recording created within this many seconds. Set to 0 to disable deduplication.
+     * @see https://docs.htmlcsstoimage.com/parameters/dedupe_duration_s/
+     */
+    dedupe_duration_s?: number | null;
+    /**
+     * Chrome's preferred light or dark color scheme while recording.
+     * @see https://docs.htmlcsstoimage.com/parameters/color_scheme/
+     */
+    color_scheme?: ColorSchemeType | null;
+    /**
+     * Browser timezone as an IANA identifier, such as 'America/New_York'.
+     * @see https://docs.htmlcsstoimage.com/parameters/timezone/
+     */
+    timezone?: string | null;
+    /** Enable mobile viewport behavior, including the page's viewport meta tag.
+     * @see https://docs.htmlcsstoimage.com/parameters/viewport/
+     */
+    viewport_mobile?: boolean | null;
+    /** Emulate landscape orientation.
+     * @see https://docs.htmlcsstoimage.com/parameters/viewport/
+     */
+    viewport_landscape?: boolean | null;
+    /** Emulate a viewport that supports touch events.
+     * @see https://docs.htmlcsstoimage.com/parameters/viewport/
+     */
+    viewport_touch?: boolean | null;
+    /** CSS media type used while recording.
+     * @see https://docs.htmlcsstoimage.com/parameters/media_type/
+     */
+    media_type?: MediaType | null;
+    /** Organization proxy to use while recording.
+     * @see https://docs.htmlcsstoimage.com/guides/advanced/proxies/
+     */
+    proxy_id?: string | null;
+    /** Storage destination to receive the recording.
+     * @see https://docs.htmlcsstoimage.com/guides/advanced/storage-destinations/
+     */
+    storage_destination_id?: string | null;
+    /** Block matching browser requests while recording. Available on paid plans.
+     * @see https://docs.htmlcsstoimage.com/parameters/request_overrides/
+     */
+    request_overrides?: RequestOverride[] | null;
+    /** When recording and actions start after page preparation. Defaults to immediate.
+     * @see https://docs.htmlcsstoimage.com/parameters/trigger/
+     */
+    trigger?: RecordingTrigger | null;
+    /** Ordered interactions. Leave null or empty to record the page without interactions.
+     * @see https://docs.htmlcsstoimage.com/parameters/actions/
+     */
+    actions?: RecordingAction[] | null;
+    /** Output format, frame rate, and scale. Defaults to MP4 at 30 fps without audio.
+     * @see https://docs.htmlcsstoimage.com/parameters/output/
+     */
+    output?: RecordingOutputOptions | null;
+    /** How duration_ms limits the timeline. Defaults to at_most.
+     * @see https://docs.htmlcsstoimage.com/parameters/duration_mode/
+     */
+    duration_mode?: RecordingDurationMode | null;
+    /** Wait to render until media or storage is requested. Defaults to false; does not reset deduplicated recordings.
+     * @see https://docs.htmlcsstoimage.com/parameters/defer_render/
+     */
+    defer_render?: boolean | null;
+    /** Skip the preparation scroll that loads lazy content. Scrolling actions still run. Defaults to false.
+     * @see https://docs.htmlcsstoimage.com/parameters/skip_scroll_preload/
+     */
+    skip_scroll_preload?: boolean | null;
+
+    protected constructor(init?: Partial<BaseCreateRecordingRequest>) {
+        Object.assign(this, init);
+    }
+}
+
+/** Record an HTML document or fragment with optional CSS and Google Fonts. */
+export class CreateHtmlCssRecordingRequest extends BaseCreateRecordingRequest {
+    readonly __type = 'html_css' as const;
+    /** HTML document or fragment to record. Fragments are rendered in a wrapper document.
+     * @see https://docs.htmlcsstoimage.com/parameters/html/
+     */
+    html!: string;
+    /** Google Fonts to load. Set font-family in your CSS to use them.
+     * @see https://docs.htmlcsstoimage.com/parameters/google_fonts/
+     */
+    google_fonts?: string[] | null;
+
+    constructor(init?: Partial<CreateHtmlCssRecordingRequest>) {
+        super();
+        Object.assign(this, init);
+    }
+}
+
+/** Record a public HTTP or HTTPS webpage. */
+export class CreateUrlRecordingRequest extends BaseCreateRecordingRequest {
+    readonly __type = 'url' as const;
+    /** Public HTTP or HTTPS URL to record.
+     * @see https://docs.htmlcsstoimage.com/parameters/url/
+     */
+    url!: string;
+    /** Attempt to hide cookie and consent banners before recording.
+     * @see https://docs.htmlcsstoimage.com/guides/advanced/blocking-cookie-banners/
+     */
+    block_consent_banners?: boolean | null;
+    /** Add X-HCTI-SCREENSHOT: 1 to the top-level navigation.
+     * @see https://docs.htmlcsstoimage.com/parameters/identify_as_hcti/
+     */
+    identify_as_hcti?: boolean | null;
+    /** Custom headers for top-level navigations to the URL's origin and additional_header_origins.
+     * @see https://docs.htmlcsstoimage.com/parameters/headers/
+     */
+    headers?: Record<string, string> | null;
+    /** Additional exact HTTP or HTTPS origins allowed to receive custom headers.
+     * @see https://docs.htmlcsstoimage.com/parameters/headers/#additional-header-origins
+     */
+    additional_header_origins?: string[] | null;
+    /** Send custom headers with subrequests to allowed origins. Defaults to false.
+     * @see https://docs.htmlcsstoimage.com/parameters/headers/#include-headers-on-subrequests
+     */
+    include_headers_on_subrequests?: boolean | null;
+
+    constructor(init?: Partial<CreateUrlRecordingRequest>) {
+        super();
         Object.assign(this, init);
     }
 }
