@@ -87,9 +87,9 @@ export interface RecordingSimpleScrollAction {
     scroll_duration_ms?: number | null;
     /** Pause between movements in milliseconds. Defaults to 400; 0 scrolls continuously. */
     ms_between_scrolls?: number | null;
-    /** CSS pixels as a number, or a string such as '900px' or '90vh'. Defaults to '90vh'. */
+    /** CSS pixels as a number, or a string such as '900px' or '50vh'. Omit or use null to use API defaults. */
     scroll_distance?: number | string | null;
-    /** Movement easing. Defaults to ease_in_out_expo. */
+    /** Movement easing. Omit or use null to use API defaults. */
     easing?: ScrollEasing | null;
     /** Time to hold at the bottom in milliseconds, limited by remaining recording time. Defaults to 0. */
     stall_at_end_ms?: number | null;
