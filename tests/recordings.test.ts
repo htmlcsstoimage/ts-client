@@ -29,6 +29,7 @@ test('createRecording maps HTML fonts and strips the internal discriminator with
     const request = new CreateHtmlCssRecordingRequest({
         html: '<h1>Hello</h1>', css: 'h1 { font-family: "Open Sans"; }', duration_ms: 3000,
         google_fonts: [' Roboto ', 'Open Sans', 'Open Sans', ''],
+        audio: {asset_id: 'asset_1', delay_ms: 0, error_on_source_invalid: false},
     });
     const before = JSON.stringify(request);
     const client: IHtmlCssToImageClient = new HtmlCssToImageClient('id', 'key', async (url, init) => {
@@ -39,6 +40,7 @@ test('createRecording maps HTML fonts and strips the internal discriminator with
         assert.deepEqual(JSON.parse(init?.body as string), {
             html: '<h1>Hello</h1>', css: 'h1 { font-family: "Open Sans"; }', duration_ms: 3000,
             google_fonts: 'Roboto|Open+Sans',
+            audio: {asset_id: 'asset_1', delay_ms: 0, error_on_source_invalid: false},
         });
         return new Response(JSON.stringify(created));
     });
@@ -85,6 +87,7 @@ test('createRecording preserves URL settings, browser options, and nested timeli
         request_overrides: [{action: RequestOverrideAction.Block, resource_types: [RequestOverrideResourceType.Script]}],
         duration_mode: 'at_least' as const, defer_render: false, skip_scroll_preload: true,
         output: {format: 'webm' as const, fps: 60, scale: 0.5},
+        audio: {url: 'https://cdn.example.com/audio/intro.mp3', source_start_ms: 100, when_audio_ends: 'loop' as const},
         trigger: {type: 'element_visible' as const, selector: '#ready', timeout_ms: 2000}, actions,
     };
     const request = new CreateUrlRecordingRequest(options);

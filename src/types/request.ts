@@ -1,4 +1,4 @@
-import type {RecordingAction, RecordingDurationMode, RecordingOutputOptions, RecordingTrigger} from "./recording.js";
+import type {RecordingAction, RecordingAudio, RecordingDurationMode, RecordingOutputOptions, RecordingTrigger} from "./recording.js";
 
 export type ColorSchemeType = 'light' | 'dark';
 export type PdfUnit = 'px' | 'in' | 'cm' | 'mm';
@@ -455,7 +455,11 @@ export abstract class BaseCreateRecordingRequest {
      * @see https://docs.htmlcsstoimage.com/parameters/actions/
      */
     actions?: RecordingAction[] | null;
-    /** Output format, frame rate, and scale. Defaults to MP4 at 30 fps without audio.
+    /** Optional MP4 or WebM soundtrack from an Asset Library ID or a public URL.
+     * @see https://docs.htmlcsstoimage.com/parameters/audio/
+     */
+    audio?: RecordingAudio | null;
+    /** Output format, frame rate, and scale. Defaults to MP4 at 30 fps.
      * @see https://docs.htmlcsstoimage.com/parameters/output/
      */
     output?: RecordingOutputOptions | null;

@@ -130,7 +130,9 @@ const animation = await client.createRecording(new CreateHtmlCssRecordingRequest
 }));
 ```
 
-Both request types share browser settings, triggers, ordered timeline actions, and output options. Optional settings use the API defaults. Recordings do not include audio.
+Both request types share browser settings, triggers, ordered timeline actions, and output options. Optional settings use the API defaults.
+
+To add a soundtrack to MP4 or WebM, pass `audio: {asset_id: "YOUR_ASSET_ID", delay_ms: 500}` or `audio: {url: "https://cdn.example.com/audio/intro.mp3"}` on either recording request. [Audio sources and playback options](https://docs.htmlcsstoimage.com/parameters/audio/).
 
 Creation returns an ID, `status_url`, and `recording_url`. Embed the `recording_url` (in a `<video>` tag, or an `<img>` tag for GIFs) or request it directly; the request waits until the recording is ready, so there is no need to poll.
 

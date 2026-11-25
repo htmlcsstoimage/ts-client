@@ -1,5 +1,34 @@
-/** Recording media format. Recordings do not include audio. */
+/** Recording media format. MP4 and WebM support an optional soundtrack. */
 export type RecordingFormat = 'mp4' | 'webm' | 'gif';
+
+/** Keep playing silently (default), repeat from the source offset, or end the video with the track. */
+export type RecordingAudioEndBehavior = 'silence' | 'loop' | 'trim_video';
+
+interface RecordingAudioOptions {
+    /** Offset into the source file in milliseconds. Defaults to 0. */
+    source_start_ms?: number;
+    /** Delay from the start of the finished video in milliseconds. Defaults to 0. */
+    delay_ms?: number;
+    /** Behavior when the track ends before the video. Defaults to silence. */
+    when_audio_ends?: RecordingAudioEndBehavior;
+    /** Defaults to true. Set false to return the full silent video if the track cannot play at render time. */
+    error_on_source_invalid?: boolean;
+}
+
+/** A completed audio upload from the recording organization's Asset Library. Private uploads are supported. */
+export interface RecordingAssetAudio extends RecordingAudioOptions {
+    asset_id: string;
+    url?: never;
+}
+
+/** A public HTTP or HTTPS URL serving the audio file at render time. */
+export interface RecordingUrlAudio extends RecordingAudioOptions {
+    url: string;
+    asset_id?: never;
+}
+
+/** One soundtrack for an MP4 or WebM recording. @see https://docs.htmlcsstoimage.com/parameters/audio/ */
+export type RecordingAudio = RecordingAssetAudio | RecordingUrlAudio;
 
 /**
  * How the requested duration controls the recording timeline:
